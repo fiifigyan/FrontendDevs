@@ -14,15 +14,13 @@ import CalendarScreen from '../screens/tabs/CalendarScreen';
 import NotificationScreen from '../screens/tabs/NotificationScreen';
 import SettingScreen from '../screens/tabs/SettingScreen';
 import EventScreen from '../screens/tabs/EventScreen';
-import HelpCenterScreen from '../screens/tabs/HelpCenterScreen';
-import EditProfileScreen from '../screens/tabs/EditProfileScreen';
 import HomeScreen from '../screens/tabs/HomeScreen';
+import WelcomeScreen from '../screens/tabs/WelcomeScreen';
 import TabNavigator from './TabNavigator';
 
 // Components
 import CustomHeader from '../components/CustomHeader';
 import CustomDrawer from '../components/CustomDrawer';
-import SuccessScreen from '../screens/tabs/SuccessScreen';
 
 
 // Create the navigators
@@ -33,7 +31,7 @@ const Stack = createNativeStackNavigator();
 export const StackNavigator = () => {
   return (
     <Stack.Navigator
-    initialRouteName="Home"
+    // initialRouteName="Home"
     screenOptions={{
       headerStyle: {
         backgroundColor: '#0074FF',
@@ -44,6 +42,11 @@ export const StackNavigator = () => {
       },
     }}
     >
+      {/* <Stack.Screen
+      name="Welcome"
+      component="WelcomeScreen"
+      options={{ headerShown: false }}
+      /> */}
       <Stack.Screen
         name='Home'
         component={HomeScreen}
@@ -133,11 +136,6 @@ export const StackNavigator = () => {
         name='Events'
         component={EventScreen}
         options={{headerShown: false}}
-      />
-      <Stack.Screen 
-        name="SuccessScreen" 
-        component={SuccessScreen}
-        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );

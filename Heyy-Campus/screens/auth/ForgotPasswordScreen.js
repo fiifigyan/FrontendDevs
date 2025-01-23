@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator, StyleSheet } from 'react-native';
+import React, { useState, useContext } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator, StyleSheet, SafeAreaView } from 'react-native';
 import CustomInput from '../../components/CustomInput';
+import authService from '../../services/authService';
+import { AuthContext } from '../../context/AuthContext';
 
 const ForgotPasswordScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -9,11 +11,12 @@ const ForgotPasswordScreen = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const validateEmail = () => {
-    if (!email) {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
       return 'Email is required';
     }
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailPattern.test(email)) {
+    if (!emailPattern.test(trimmedEmail)) {
       return 'Invalid email format';
     }
     return '';
@@ -29,24 +32,23 @@ const ForgotPasswordScreen = ({ navigation }) => {
 
     try {
       setIsLoading(true);
-      // Simulated API call - replace with actual implementation
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await authService.forgotPassword(email);
       Alert.alert(
         'Check Your Email',
         'If an account exists with this email, you will receive password reset instructions.',
         [{ text: 'OK', onPress: () => navigation.goBack() }]
       );
     } catch (err) {
-      console.error('ForgotPassword Error:', err); // Logs the error for debugging
-      Alert.alert('Error', 'Unable to process your request. Please try again later.');
+      console.error('ForgotPassword Error:', err);
+      Alert.alert('Error', err.message || 'Unable to process your request. Please try again later.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.header}>
         <Text style={styles.title}>Reset Password</Text>
         <Text style={styles.subtitle}>
@@ -54,7 +56,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
         </Text>
       </View>
       
-      <View style={styles.formContainer}>
+      <View style={styles.form}>
         <CustomInput
           name="email"
           label="Email Address"
@@ -66,7 +68,8 @@ const ForgotPasswordScreen = ({ navigation }) => {
           autoCapitalize="none"
           onBlur={() => {
             setTouched(true);
-            setError(validateEmail());
+            const emailError = validateEmail();
+            setError(emailError);
           }}
         />
         
@@ -89,30 +92,37 @@ const ForgotPasswordScreen = ({ navigation }) => {
       >
         <Text style={styles.backButtonText}>Back to Login</Text>
       </TouchableOpacity>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: '#f9f9f9',
+  },
+  scrollContainer: {
     flexGrow: 1,
-    padding: 20,
   },
   header: {
-    marginBottom: 20,
+    padding: 20,
+    backgroundColor: '#007AFF',
+    alignItems: 'center',
   },
-  title: {    
-    fontSize: 24,    
-    fontWeight: 'bold',    
-    color: '#007AFF',    
-    marginBottom: 8,  
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 8,
   },
-  subtitle: {    
-    fontSize: 16,    
-    color: '#0070FF',  
+  subtitle: {
+    fontSize: 18,
+    color: '#ffffff',
   },
-  formContainer: {
-    marginBottom: 20,
+  form: {
+    padding: 20,
+    gap: 10,
   },
   button: {
     backgroundColor: '#007AFF',

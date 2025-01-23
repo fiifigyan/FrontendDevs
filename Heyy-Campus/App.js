@@ -4,10 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import AuthStack from './navigation/AuthStack';
 import DrawerNavigator from './navigation/StackNavigator';
-import HomeScreen from './screens/tabs/HomeScreen';
-import AdmissionForm from './screens/tabs/AdmissionForm';
-import WelcomeScreen from './screens/tabs/WelcomeScreen';
-
+import SignupScreen from './screens/auth/SignupScreen';
 
 // function AppContent() {
 //   const { isLoading, userInfo } = React.useContext(AuthContext);
@@ -26,12 +23,13 @@ import WelcomeScreen from './screens/tabs/WelcomeScreen';
 function App() {
   return (
     <AuthProvider>
-      <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="light-content" backgroundColor="#007AFF" />
-        <NavigationContainer>
-          <WelcomeScreen />
-        </NavigationContainer>
-      </SafeAreaView>
+      
+      <StatusBar barStyle="light-content" backgroundColor="#007AFF" />
+      <NavigationContainer>
+        <SafeAreaView style={styles.safeArea}>
+          <SignupScreen />
+        </SafeAreaView>
+      </NavigationContainer>
     </AuthProvider>
   );
 }
@@ -39,7 +37,7 @@ function App() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: 'aliceblue',
+    backgroundColor: 'darkblue',
   },
   spinnerContainer: {
     flex: 1,

@@ -30,12 +30,12 @@ const AuthStack = () => {
       options={{ headerShown: false }}
     />
     <Stack.Screen
-      name='ForgotPassword'
+      name='Forgot'
       component={ForgotPasswordScreen}
       options={{ headerShown: false }}
     />
     <Stack.Screen
-      name='ResetPassword'
+      name='Reset'
       component={ResetPasswordScreen}
       options={{ headerShown: false }}
     />

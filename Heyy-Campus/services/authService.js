@@ -1,41 +1,40 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL, TOKEN_KEY } from '../config';
 
-const BASE_URL = 'http://localhost:8081/create';
-const TOKEN_KEY = 'userInfo';
+// Let's create an Axios instance
+const apiClient = axios.create({
+  baseURL: BASE_URL,
+  timeout: 5000,
+});
 
-// Enhanced axios interceptors with refresh token handling
-axios.interceptors.request.use(
+// Request interceptor
+apiClient.interceptors.request.use(
   async (config) => {
-    try {
-      const userInfo = await authService.getUserInfo();
-      if (userInfo?.access_token) {
-        config.headers['Authorization'] = `Bearer ${userInfo.access_token}`;
-      }
-    } catch (e) {
-      console.error('Error in request interceptor:', e);
+    const userInfo = await authService.getUserInfo();
+    if (userInfo?.access_token) {
+      config.headers.Authorization = `Bearer ${userInfo.access_token}`;
     }
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-axios.interceptors.response.use(
+// Response interceptor
+apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        const userInfo = await authService.getUserInfo();
-        if (userInfo?.refresh_token) {
-          const newTokens = await authService.refreshToken(userInfo.refresh_token);
-          if (newTokens) {
-            originalRequest.headers['Authorization'] = `Bearer ${newTokens.access_token}`;
-            return axios(originalRequest);
-          }
+        const newTokens = await authService.refreshToken();
+        if (newTokens) {
+          originalRequest.headers.Authorization = `Bearer ${newTokens.access_token}`;
+          return apiClient(originalRequest);
         }
       } catch (refreshError) {
+        console.error('Token refresh failed:', refreshError);
         await authService.logout();
         throw refreshError;
       }
@@ -47,96 +46,41 @@ axios.interceptors.response.use(
 const authService = {
   async getUserInfo() {
     try {
-      const userInfoString = await AsyncStorage.getItem(TOKEN_KEY);
-      //Debug
-      console.log('User info:', userInfoString);
-      return userInfoString ? JSON.parse(userInfoString) : null;
-    } catch (e) {
-      console.error('Error getting user info:', e);
+      const userInfo = await AsyncStorage.getItem(TOKEN_KEY);
+      return userInfo ? JSON.parse(userInfo) : null;
+    } catch (error) {
+      console.error('Failed to retrieve user info:', error);
       return null;
     }
   },
 
-  async refreshToken(refreshToken) {
+  async setUserInfo(userInfo) {
     try {
-      const response = await axios.post(`${BASE_URL}/refresh-token`, { refreshToken });
-      const newTokens = response.data;
-      await this.updateTokens(newTokens);
-      return newTokens;
-    } catch (e) {
-      throw new Error('Token refresh failed');
+      await AsyncStorage.setItem(TOKEN_KEY, JSON.stringify(userInfo));
+    } catch (error) {
+      console.error('Failed to store user info:', error);
     }
-  },
-
-  async updateTokens(tokens) {
-    const userInfo = await this.getUserInfo();
-    await AsyncStorage.setItem(TOKEN_KEY, JSON.stringify({ ...userInfo, ...tokens }));
   },
 
   async register(userInfo) {
     try {
-      const response = await axios.post(`${BASE_URL}`, {
-        firstName: userInfo.firstName.trim(),
-        lastName: userInfo.lastName.trim(),
-        email: userInfo.email.trim().toLowerCase(),
-        password: userInfo.password,
-      });
-
-      const userData = response.data;
-      await AsyncStorage.setItem(TOKEN_KEY, JSON.stringify(userData));
-      return userData;
+      const response = await apiClient.post('/create', userInfo);
+      await this.setUserInfo(response.data);
+      return response.data;
     } catch (error) {
-      if (error.response?.status === 409) {
-        throw new Error('This email is already registered');
-      }
+      console.error('Registration failed:', error);
       throw new Error(error.response?.data?.message || 'Registration failed');
     }
   },
 
-  async login({ email, password }) {
+  async login(userInfo) {
     try {
-      const response = await axios.post(`${BASE_URL}/login`, {
-        email: email.trim().toLowerCase(),
-        password
-      });
-      
-      const userData = response.data;
-      await AsyncStorage.setItem(TOKEN_KEY, JSON.stringify(userData));
-      return userData;
+      const response = await apiClient.post('/login', userInfo);
+      await this.setUserInfo(response.data);
+      return response.data;
     } catch (error) {
-      if (error.response?.status === 401) {
-        throw new Error('Invalid email or password');
-      }
-      throw new Error('Login failed. Please try again.');
-    }
-  },
-
-  // async verifyEmail(token) {
-  //   try {
-  //     await axios.post(`${BASE_URL}/verify-email`, {
-  //       token
-  //     });
-  //   } catch (error) {
-  //     throw new Error('Email verification failed');
-  //   }
-  // },
-
-  // async sendVerificationEmail(email) {
-  //   try {
-  //     await axios.post(`${BASE_URL}/send-verification-email`, {
-  //       email: email.trim().toLowerCase()
-  //     });
-  //   } catch (error) {
-  //     throw new Error('Failed to send verification email');
-  //   }
-  // },
-
-  async isLoggedIn() {
-    try {
-      const userInfo = await this.getUserInfo();
-      return !!userInfo?.access_token;
-    } catch (e) {
-      return false;
+      console.error('Login failed:', error);
+      throw new Error(error.response?.data?.message || 'Login failed');
     }
   },
 
@@ -144,41 +88,30 @@ const authService = {
     try {
       const userInfo = await this.getUserInfo();
       if (userInfo?.refresh_token) {
-        try {
-          await axios.post(`${BASE_URL}/logout`, {
-            refreshToken: userInfo.refresh_token
-          });
-        } catch (e) {
-          console.error('Error logging out on server:', e);
-        }
+        await apiClient.post('/logout', { refreshToken: userInfo.refresh_token });
       }
       await AsyncStorage.removeItem(TOKEN_KEY);
-      return true;
     } catch (error) {
-      throw new Error('Logout failed');
+      console.error('Logout failed:', error);
     }
   },
 
-  async forgotPassword(email) {
+  async refreshToken() {
     try {
-      await axios.post(`${BASE_URL}/forgot-password`, {
-        email: email.trim().toLowerCase()
-      });
+      const userInfo = await this.getUserInfo();
+      const response = await apiClient.post('/refresh-token', { refreshToken: userInfo?.refresh_token });
+      await this.setUserInfo({ ...userInfo, ...response.data });
+      return response.data;
     } catch (error) {
-      throw new Error('Failed to send reset instructions');
+      console.error('Token refresh failed:', error);
+      throw error;
     }
   },
 
-  async resetPassword(token, newPassword) {
-    try {
-      await axios.post(`${BASE_URL}/reset-password`, {
-        token,
-        password: newPassword
-      });
-    } catch (error) {
-      throw new Error('Password reset failed');
-    }
-  }
+  async isLoggedIn() {
+    const userInfo = await this.getUserInfo();
+    return !!userInfo?.access_token;
+  },
 };
 
 export default authService;

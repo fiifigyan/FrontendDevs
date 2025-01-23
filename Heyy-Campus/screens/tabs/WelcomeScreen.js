@@ -1,98 +1,183 @@
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
-import React from 'react';
-import { navigation } from '@react-navigation/native';
+import React, { useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import Card from '../../components/Card';
+import Icon from 'react-native-vector-icons/Ionicons';
+import { useNavigation } from '@react-navigation/native';
 
 const WelcomeScreen = () => {
+    const navigation = useNavigation();
+    const [parentName] = useState("Parent Name"); // Would come from auth/signup
 
-  return (
-    <ScrollView style={styles.container}>
-        {/* Trends */}
-      <View style={styles.trendsContainer}>
-        <Text style={styles.trendsTitle}>What's Trending?</Text>
-        <View style={styles.trends}>
-          <Text style={styles.trend}>#Trend1</Text>
-          <Text style={styles.trend}>#Trend2</Text>
-          <Text style={styles.trend}>#Trend3</Text>
-          <Text style={styles.trend}>#Trend4</Text>
-          <Text style={styles.trend}>#Trend5</Text>
-        </View>
-      </View>
-
-      <View style={styles.buttons}>
-        <TouchableOpacity style={styles.button} onPress = {() => navigation.navigate('AdmissionForm')}>
-          <Text style={styles.buttonText}>Admission</Text>
+    const QuickActionCard = ({ iconName, title, description, onPress }) => (
+        <TouchableOpacity onPress={onPress}>
+            <Card style={styles.actionCard}>
+                <Icon name={iconName} size={24} color="#007AFF" />
+                <View style={styles.cardContent}>
+                    <Text style={styles.cardTitle}>{title}</Text>
+                    <Text style={styles.cardDescription}>{description}</Text>
+                </View>
+                <Icon name="chevron-forward" size={20} color="#666" />
+            </Card>
         </TouchableOpacity>
+    );
 
-        <TouchableOpacity style={styles.button} onPress = {() => navigation.navigate('Login')}>
-          <Text style={styles.buttonText}>Login</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
-  )
-}
+    return (
+        <ScrollView style={styles.container}>
+            {/* Welcome Section */}
+            <View style={styles.welcomeSection}>
+                <Text style={styles.welcomeText}>Welcome, {parentName}!</Text>
+                <Text style={styles.subtitle}>Let's get started with your child's admission process</Text>
+            </View>
 
-export default WelcomeScreen
+            {/* Get Started Guide */}
+            <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Quick Actions</Text>
+                
+                <QuickActionCard
+                    iconName="person-outline"
+                    title="Complete Your Profile"
+                    description="Add your contact details and preferences"
+                    onPress={() => navigation.navigate('ProfileScreen')}
+                />
+
+                <QuickActionCard
+                    iconName="book-outline"
+                    title="Start New Admission"
+                    description="Apply for your child's admission"
+                    onPress={() => navigation.navigate('AdmissionForm')}
+                />
+
+                <QuickActionCard
+                    iconName="calendar-outline"
+                    title="View Admission Calendar"
+                    description="Check important dates and deadlines"
+                    onPress={() => navigation.navigate('AdmissionCalendar')}
+                />
+
+                <QuickActionCard
+                    iconName="document-text-outline"
+                    title="Document Checklist"
+                    description="View required documents for admission"
+                    onPress={() => navigation.navigate('DocumentChecklist')}
+                />
+
+                <QuickActionCard
+                    iconName="notifications-outline"
+                    title="Set Up Notifications"
+                    description="Stay updated on application status"
+                    onPress={() => navigation.navigate('NotificationScreen')}
+                />
+            </View>
+
+            {/* Important Information */}
+            <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Important Information</Text>
+                <Card style={styles.infoCard}>
+                    <Text style={styles.infoTitle}>Admission Timeline</Text>
+                    <Text style={styles.infoText}>• Applications Open: [Date]</Text>
+                    <Text style={styles.infoText}>• Document Submission: [Date]</Text>
+                    <Text style={styles.infoText}>• Assessment Date: [Date]</Text>
+                    <Text style={styles.infoText}>• Results Declaration: [Date]</Text>
+                </Card>
+            </View>
+
+            {/* Help Section */}
+            <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Need Help?</Text>
+                <TouchableOpacity 
+                    style={styles.helpButton}
+                    onPress={() => navigation.navigate('Support')}
+                >
+                    <Text style={styles.helpButtonText}>Contact Support</Text>
+                </TouchableOpacity>
+            </View>
+        </ScrollView>
+    );
+};
+
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#f5f5f5',
     },
-    trendsContainer: {
-        marginTop: 20,
-        marginBottom: 20,
+    welcomeSection: {
+        padding: 20,
+        backgroundColor: '#007AFF',
     },
-    trendsTitle: {
+    welcomeText: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#fff',
+        marginBottom: 8,
+    },
+    subtitle: {
+        fontSize: 16,
+        color: '#fff',
+        opacity: 0.9,
+    },
+    section: {
+        padding: 20,
+    },
+    sectionTitle: {
         fontSize: 20,
         fontWeight: 'bold',
-        marginLeft: 20,
+        marginBottom: 15,
+        color: '#333',
     },
-    trends: {
+    actionCard: {
         flexDirection: 'row',
-        flexWrap: 'wrap',
-        marginLeft: 20,
-    },
-    trend: {
-        fontSize: 16,
-        color: '#007AFF',
-        marginRight: 10,
-        marginBottom: 10,
-    },
-    buttons: {
-        flexDirection: 'column',
-        justifyContent: 'center',
         alignItems: 'center',
-        gap: 10,
+        padding: 15,
+        marginBottom: 12,
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 4,
+        elevation: 3,
     },
-    button: {
-        width: '100%',
+    cardContent: {
+        flex: 1,
+        marginLeft: 15,
+    },
+    cardTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#333',
+    },
+    cardDescription: {
+        fontSize: 14,
+        color: '#666',
+        marginTop: 4,
+    },
+    infoCard: {
+        padding: 15,
+        backgroundColor: '#fff',
+    },
+    infoTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        marginBottom: 10,
+        color: '#333',
+    },
+    infoText: {
+        fontSize: 14,
+        color: '#666',
+        marginBottom: 5,
+    },
+    helpButton: {
         backgroundColor: '#007AFF',
-        padding: 12,
+        padding: 15,
         borderRadius: 8,
-        marginHorizontal: 10,
+        alignItems: 'center',
     },
-    buttonText: {
+    helpButtonText: {
         color: '#fff',
         fontSize: 16,
-        fontWeight: 'bold',
+        fontWeight: '500',
     },
-    buttonDisabled: {
-    backgroundColor: '#ccc',
-    padding: 12,
-    borderRadius: 8,
-    marginHorizontal: 10,
-    opacity: 0.5,
-    },
-    buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-    },
-    buttonDisabled: {
-    backgroundColor: '#ccc',
-    padding: 12,
-    borderRadius: 8,
-    marginHorizontal: 10,
-    opacity: 0.5,
-    },
-})
+});
+
+export default WelcomeScreen;

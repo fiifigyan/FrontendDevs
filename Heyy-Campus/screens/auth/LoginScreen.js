@@ -1,11 +1,9 @@
 import React, { useState, useContext } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Alert, StyleSheet, SafeAreaView } from 'react-native';
-import { AuthContext } from '../../context/AuthContext';
 import { CustomInput } from '../../components/CustomInput';
-import authService from '../../services/authService';
+import { AuthContext } from '../../context/AuthContext';
 
 const LoginScreen = ({ route, navigation }) => {
-  // const { role } = route.params;
   const { login, isLoading } = useContext(AuthContext);
   
   const [userInfo, setUserInfo] = useState({
@@ -28,12 +26,10 @@ const LoginScreen = ({ route, navigation }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleLogin = async () => {
+  const handleSubmit = async () => {
     if (validateForm()) {
       try {
-        const userInfo = await authService.login({
-          ...userInfo
-        });
+        await login(userInfo);
         // Login successful, navigation will be handled by AuthProvider
       } catch (error) {
         Alert.alert('Login Failed', error.message);
@@ -75,13 +71,16 @@ const LoginScreen = ({ route, navigation }) => {
 
           <TouchableOpacity
             style={[styles.submitButton, isLoading && styles.submitButtonDisabled]}
-            onPress={handleLogin}
+            onPress={handleSubmit}
             disabled={isLoading}
           >
-            <Text style={styles.submitButtonText}>
-              {isLoading ? 'Signing In...' : 'Sign In'}
-            </Text>
-          </TouchableOpacity>
+            <View style={styles.buttonContent}>
+              {isLoading && <ActivityIndicator size="small" color="#FFFFFF" style={styles.spinner} />}
+              <Text style={styles.submitButtonText}>
+                {isLoading ? 'Loging in...' : 'Login'}
+              </Text>
+              </View>
+            </TouchableOpacity>
 
           <View style={styles.signupContainer}>
             <Text style={styles.signupText}>Don't have an account? </Text>
@@ -102,23 +101,24 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
-    padding: 20,
   },
   header: {
+    padding: 20,
+    backgroundColor: '#007AFF',
     alignItems: 'center',
-    marginVertical: 40,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#007AFF',
+    color: '#ffffff',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 18,
-    color: '#0070FF',
+    color: '#ffffff',
   },
   form: {
+    padding: 20,
     gap: 10,
   },
   forgotPassword: {
@@ -127,6 +127,11 @@ const styles = StyleSheet.create({
   forgotPasswordText: {
     color: '#007AFF',
     fontSize: 14,
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   submitButton: {
     backgroundColor: '#007AFF',
