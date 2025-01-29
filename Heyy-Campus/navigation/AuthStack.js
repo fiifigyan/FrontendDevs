@@ -1,11 +1,11 @@
 import React from 'react'
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import LoginScreen from '../screens/auth/LoginScreen';
-import SignupScreen from '../screens/auth/SignupScreen';
-import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen'
-import ResetPasswordScreen from '../screens/auth/ResetPasswordScreen'
-import OnboardingScreen from '../screens/tabs/OnboardingScreen'
+import LoginScreen from '../screens/LoginScreen';
+import SignupScreen from '../screens/SignupScreen';
+import ForgotPasswordScreen from '../screens/ForgotPasswordScreen'
+import ResetPasswordScreen from '../screens/ResetPasswordScreen'
+import OnboardingScreen from '../screens/OnboardingScreen'
 
 const Stack = createNativeStackNavigator();
 
@@ -15,7 +15,7 @@ const AuthStack = () => {
       screenOptions={{ headerShown: false }}
     >
     <Stack.Screen
-      name='Onboarding'
+      name='Onboard'
       component={OnboardingScreen}
       options={{ headerShown: false }}
     />

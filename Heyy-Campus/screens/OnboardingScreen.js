@@ -3,16 +3,16 @@ import { View, Text, StyleSheet, Image, ImageBackground } from 'react-native';
 import AppIntroSlider from 'react-native-app-intro-slider';
 
 export const ICONS = {
-  SPLASH1: require('../../assets/images/welcome.png'),
-  SPLASH2: require('../../assets/images/updated-resume.png'),
-  SPLASH3: require('../../assets/images/event-updates.png'),
-  SPLASH4: require('../../assets/images/secure-files.png'),
+  SPLASH1: require('../assets/images/welcome.png'),
+  SPLASH2: require('../assets/images/updated-resume.png'),
+  SPLASH3: require('../assets/images/event-updates.png'),
+  SPLASH4: require('../assets/images/secure-files.png'),
 }
 
 const slides = [
   {
     key: '1',
-    title: 'Welcome to Heyy Campus',
+    title: 'Welcome to RIS',
     text: 'Simplify admissions and manage school life in one place.',
     image: ICONS.SPLASH1,
     backgroundColor: '#2196F3',

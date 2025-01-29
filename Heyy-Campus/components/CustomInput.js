@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons'; // Ensure you have this package installed
-
+import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { StyleSheet } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
 export const CustomInput = ({
   label,
   value,
@@ -11,12 +11,16 @@ export const CustomInput = ({
   placeholder,
   secureTextEntry = false,
   keyboardType = 'default',
-  autoCapitalize = 'sentences'
+  autoCapitalize = 'sentences',
+  validate
 }) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(!secureTextEntry);
 
-  const togglePasswordVisibility = () => {
-    setIsPasswordVisible(!isPasswordVisible);
+  const handleBlur = () => {
+    if (validate) {
+      validate(value);
+    }
+    onBlur && onBlur();
   };
 
   return (
@@ -27,7 +31,7 @@ export const CustomInput = ({
           style={[styles.input, error ? styles.inputError : null]}
           value={value}
           onChangeText={onChangeText}
-          onBlur={onBlur}
+          onBlur={handleBlur}
           placeholder={placeholder}
           secureTextEntry={!isPasswordVisible && secureTextEntry}
           keyboardType={keyboardType}
@@ -36,7 +40,7 @@ export const CustomInput = ({
         {secureTextEntry && (
           <TouchableOpacity
             style={styles.iconWrapper}
-            onPress={togglePasswordVisibility}
+            onPress={() => setIsPasswordVisible(!isPasswordVisible)}
           >
             <Icon name={isPasswordVisible ? 'eye' : 'eye-off'} size={20} color="#007AFF" />
           </TouchableOpacity>

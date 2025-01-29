@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useContext } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
-import Card from '../../components/Card';
+import Card from '../components/Card';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
+import { AuthContext } from '../context/AuthContext';
 
 const WelcomeScreen = () => {
     const navigation = useNavigation();
-    const [parentName] = useState("Parent Name"); // Would come from auth/signup
+    const { userInfo } = useContext(AuthContext);
 
     const QuickActionCard = ({ iconName, title, description, onPress }) => (
         <TouchableOpacity onPress={onPress}>
@@ -25,8 +26,12 @@ const WelcomeScreen = () => {
         <ScrollView style={styles.container}>
             {/* Welcome Section */}
             <View style={styles.welcomeSection}>
-                <Text style={styles.welcomeText}>Welcome, {parentName}!</Text>
-                <Text style={styles.subtitle}>Let's get started with your child's admission process</Text>
+                <Text style={styles.welcomeText}>
+                    Welcome, {userInfo?.fname|| 'Parent'}!
+                </Text>
+                <Text style={styles.subtitle}>
+                    Let's get started with your child's admission process
+                </Text>
             </View>
 
             {/* Get Started Guide */}
@@ -37,14 +42,14 @@ const WelcomeScreen = () => {
                     iconName="person-outline"
                     title="Complete Your Profile"
                     description="Add your contact details and preferences"
-                    onPress={() => navigation.navigate('ProfileScreen')}
+                    onPress={() => navigation.navigate('Profile')}
                 />
 
                 <QuickActionCard
                     iconName="book-outline"
                     title="Start New Admission"
                     description="Apply for your child's admission"
-                    onPress={() => navigation.navigate('AdmissionForm')}
+                    onPress={() => navigation.navigate('Admission')}
                 />
 
                 <QuickActionCard

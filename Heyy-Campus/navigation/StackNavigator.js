@@ -4,24 +4,22 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 // Screens
-import AdmissionForm from '../screens/tabs/AdmissionForm';
-import AddAccountScreen from '../screens/tabs/AddAccountScreen';
-import SwitchAccountScreen from '../screens/tabs/SwitchAccountScreen';
-import MakePaymentScreen from '../screens/tabs/MakePaymentScreen';
-import PaymentHistoryScreen from '../screens/tabs/PaymentHistoryScreen';
-import ProfileScreen from '../screens/tabs/ProfileScreen';
-import CalendarScreen from '../screens/tabs/CalendarScreen';
-import NotificationScreen from '../screens/tabs/NotificationScreen';
-import SettingScreen from '../screens/tabs/SettingScreen';
-import EventScreen from '../screens/tabs/EventScreen';
-import HomeScreen from '../screens/tabs/HomeScreen';
-import WelcomeScreen from '../screens/tabs/WelcomeScreen';
+import AdmissionForm from '../screens/AdmissionForm';
+import AddAccountScreen from '../screens/AddAccountScreen';
+import SwitchAccountScreen from '../screens/SwitchAccountScreen';
+import MakePaymentScreen from '../screens/MakePaymentScreen';
+import PaymentHistoryScreen from '../screens/PaymentHistoryScreen';
+import ProfileScreen from '../screens/ProfileScreen';
+import CalendarScreen from '../screens/CalendarScreen';
+import NotificationScreen from '../screens/NotificationScreen';
+import SettingScreen from '../screens/SettingScreen';
+import EventScreen from '../screens/EventScreen';
+import EditProfile from '../screens/EditProfileScreen';
+import WelcomeScreen from '../screens/WelcomeScreen';
 import TabNavigator from './TabNavigator';
 
 // Components
-import CustomHeader from '../components/CustomHeader';
 import CustomDrawer from '../components/CustomDrawer';
-
 
 // Create the navigators
 const Drawer = createDrawerNavigator();
@@ -31,7 +29,7 @@ const Stack = createNativeStackNavigator();
 export const StackNavigator = () => {
   return (
     <Stack.Navigator
-    // initialRouteName="Home"
+    initialRouteName="Welcome"
     screenOptions={{
       headerStyle: {
         backgroundColor: '#0074FF',
@@ -42,70 +40,40 @@ export const StackNavigator = () => {
       },
     }}
     >
-      {/* <Stack.Screen
-      name="Welcome"
-      component="WelcomeScreen"
-      options={{ headerShown: false }}
-      /> */}
+      <Stack.Screen
+        name="Welcome"
+        component={WelcomeScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name='EditProfile'
+        component={EditProfile}
+        options={{headerShown: false}}
+      />
       <Stack.Screen
         name='Home'
-        component={HomeScreen}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title="Home"
-              onMenuPress={() => navigation.openDrawer()}
-            />
-          ),
-        })}
+        component={TabNavigator}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name='Calendar'
         component={CalendarScreen}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title="Calendar"
-              onMenuPress={() => navigation.openDrawer()}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name='Profile'
         component={ProfileScreen}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title="Profile"
-              onMenuPress={() => navigation.openDrawer()}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name='Notifications'
         component={NotificationScreen}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title="Notifications"
-              onMenuPress={() => navigation.openDrawer()}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name='Settings'
         component={SettingScreen}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title="Settings"
-              onMenuPress={() => navigation.openDrawer()}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name='Admission'

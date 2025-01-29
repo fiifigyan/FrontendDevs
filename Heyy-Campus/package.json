@@ -1,5 +1,5 @@
 {
-  "name": "heyy",
+  "name": "ris",
   "license": "0BSD",
   "version": "1.0.0",
   "main": "index.js",
@@ -13,6 +13,7 @@
     "@expo/metro-runtime": "^4.0.1",
     "@react-native-async-storage/async-storage": "^1.23.1",
     "@react-native-community/cli": "^15.1.3",
+    "@react-native-community/netinfo": "^11.4.1",
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/drawer": "^7.1.0",
     "@react-navigation/elements": "^2.2.5",
@@ -31,6 +32,7 @@
     "react-native-app-intro-slider": "^4.0.4",
     "react-native-calendars": "^1.1307.0",
     "react-native-document-picker": "^9.3.1",
+    "react-native-encrypted-storage": "^4.0.3",
     "react-native-modal-dropdown": "^1.0.2",
     "react-native-pager-view": "^6.5.1",
     "react-native-paper": "^5.12.5",

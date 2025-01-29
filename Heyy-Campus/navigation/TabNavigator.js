@@ -2,11 +2,11 @@ import React from 'react'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-import HomeScreen from '../screens/tabs/HomeScreen';
-import CalendarScreen from '../screens/tabs/CalendarScreen';
-import ProfileScreen from '../screens/tabs/ProfileScreen';
-import NotificationScreen from '../screens/tabs/NotificationScreen';
-import SettingScreen from '../screens/tabs/SettingScreen';
+import HomeScreen from '../screens/HomeScreen';
+import CalendarScreen from '../screens/CalendarScreen';
+import ProfileScreen from '../screens/ProfileScreen';
+import NotificationScreen from '../screens/NotificationScreen';
+import SettingScreen from '../screens/SettingScreen';
 
 
 const Tab = createBottomTabNavigator();
@@ -29,6 +29,7 @@ const TabNavigator = () => {
       tabBarInactiveTintColor: 'gray',
       tabBarStyle: {
         backgroundColor: '#fff',
+        display: getTabBarVisibility(route),
       },
     })}
     

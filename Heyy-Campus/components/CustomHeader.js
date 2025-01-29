@@ -8,8 +8,12 @@ const CustomHeader = ({ title, onMenuPress }) => {
   
   return (
     <View style={styles.header}>
-       <TouchableOpacity onMenuPress={() => navigation.openDrawer()}>
-        <Icon name="menu" size={25} color="#fff" />
+      <TouchableOpacity onMenuPress={() => navigation.openDrawer()}>
+        <Image 
+          source={require('../assets/icon.png')} 
+          style={{ width: 50, height: 50, borderRadius: '50%', borderWidth: 1, borderColor: '#fff' }} 
+        />
+        <Text style={styles.headerText}>Welcome to Heyy Campus</Text>
       </TouchableOpacity>
 
       <Text style={styles.title}>{title}</Text>

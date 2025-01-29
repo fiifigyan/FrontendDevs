@@ -1,8 +1,8 @@
 import React, { useState, useContext } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator, StyleSheet, SafeAreaView } from 'react-native';
-import CustomInput from '../../components/CustomInput';
-import authService from '../../services/authService';
-import { AuthContext } from '../../context/AuthContext';
+import CustomInput from '../components/CustomInput';
+import authService from '../services/authService';
+import { AuthContext } from '../context/AuthContext';
 
 const ForgotPasswordScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -22,7 +22,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
     return '';
   };
 
-  const handleSubmit = async () => {
+  const handleForgot = async () => {
     setTouched(true);
     const emailError = validateEmail();
     if (emailError) {
@@ -47,57 +47,61 @@ const ForgotPasswordScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Reset Password</Text>
-        <Text style={styles.subtitle}>
-          Enter your email address and we'll send you instructions to reset your password.
-        </Text>
-      </View>
-      
-      <View style={styles.form}>
-        <CustomInput
-          name="email"
-          label="Email Address"
-          placeholder="Enter your email"
-          value={email}
-          onChangeText={(text) => setEmail(text.trim())}
-          error={touched ? error : ''}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          onBlur={() => {
-            setTouched(true);
-            const emailError = validateEmail();
-            setError(emailError);
-          }}
-        />
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView style={styles.container}>
+          <View style={styles.header}>
+            <Text style={styles.title}>Reset Password</Text>
+            <Text style={styles.subtitle}>
+              Enter your email address and we'll send you instructions to reset your password.
+            </Text>
+          </View>
         
-        <TouchableOpacity 
-          style={[styles.button, isLoading && styles.buttonDisabled]} 
-          onPress={handleSubmit}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <ActivityIndicator color="#FFFFFF" />
-          ) : (
-            <Text style={styles.buttonText}>Send</Text>
-          )}
-        </TouchableOpacity>
-      </View>
+          <View style={styles.form}>
+            <CustomInput
+              name="email"
+              label="Email Address"
+              placeholder="Enter your email"
+              value={email}
+              onChangeText={(text) => setEmail(text.trim())}
+              error={touched ? error : ''}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              onBlur={() => {
+                setTouched(true);
+                const emailError = validateEmail();
+                setError(emailError);
+              }}
+            />
+            
+            <TouchableOpacity 
+              style={[styles.button, isLoading && styles.buttonDisabled]} 
+              onPress={handleForgot}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.buttonText}>Send</Text>
+              )}
+            </TouchableOpacity>
+          </View>
 
-      <TouchableOpacity 
-        style={styles.backButton}
-        onPress={() => navigation.goBack()}
-      >
-        <Text style={styles.backButtonText}>Back to Login</Text>
-      </TouchableOpacity>
-      </ScrollView>
-    </SafeAreaView>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.backButtonText}>Back to Login</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    backgroundColor: 'darkblue',
+    flex: 1,
+  },
   container: {
     flex: 1,
     backgroundColor: '#f9f9f9',

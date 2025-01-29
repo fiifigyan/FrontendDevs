@@ -1,16 +1,16 @@
 import React, { useState, useContext } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Alert, StyleSheet, SafeAreaView } from 'react-native';
-import { CustomInput } from '../../components/CustomInput';
-import { AuthContext } from '../../context/AuthContext';
+import { View, Text, TouchableOpacity, ScrollView, Alert, StyleSheet, ActivityIndicator } from 'react-native';
+import { CustomInput } from '../components/CustomInput';
+import { AuthContext } from '../context/AuthContext';
+import { SafeAreaView } from 'react-native-web';
 
-const LoginScreen = ({ route, navigation }) => {
-  const { login, isLoading } = useContext(AuthContext);
-  
+const LoginScreen = ({ navigation }) => {
   const [userInfo, setUserInfo] = useState({
     email: '',
     password: ''
   });
-
+  
+  const { login, isLoading } = useContext(AuthContext);
   const [errors, setErrors] = useState({});
   
   const validateForm = () => {
@@ -26,11 +26,10 @@ const LoginScreen = ({ route, navigation }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async () => {
+  const handleLogin = async () => {
     if (validateForm()) {
       try {
         await login(userInfo);
-        // Login successful, navigation will be handled by AuthProvider
       } catch (error) {
         Alert.alert('Login Failed', error.message);
       }
@@ -39,12 +38,11 @@ const LoginScreen = ({ route, navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Welcome Back!</Text>
-          <Text style={styles.subtitle}>Login as Parent</Text>
-        </View>
-
+      <View style={styles.header}>
+        <Text style={styles.title}>Welcome Back!</Text>
+        <Text style={styles.subtitle}>Login as Parent</Text>
+      </View>
+      <ScrollView>
         <View style={styles.form}>
           <CustomInput
             label="Email"
@@ -55,40 +53,40 @@ const LoginScreen = ({ route, navigation }) => {
             keyboardType="email-address"
             autoCapitalize="none"
           />
-          
-          <CustomInput
-            label="Password"
-            value={userInfo.password}
-            onChangeText={(text) => setUserInfo({ ...userInfo, password: text })}
-            error={errors.password}
-            placeholder="Enter your password"
-            secureTextEntry
-          />
+            
+            <CustomInput
+              label="Password"
+              value={userInfo.password}
+              onChangeText={(text) => setUserInfo({ ...userInfo, password: text })}
+              error={errors.password}
+              placeholder="Enter your password"
+              secureTextEntry
+            />
 
-          <TouchableOpacity style={styles.forgotPassword} onPress={() => navigation.navigate('ForgotPassword')} >
-            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.forgotPassword} onPress={() => navigation.navigate('Forgot')} >
+              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[styles.submitButton, isLoading && styles.submitButtonDisabled]}
-            onPress={handleSubmit}
-            disabled={isLoading}
-          >
-            <View style={styles.buttonContent}>
-              {isLoading && <ActivityIndicator size="small" color="#FFFFFF" style={styles.spinner} />}
-              <Text style={styles.submitButtonText}>
-                {isLoading ? 'Loging in...' : 'Login'}
-              </Text>
+            <TouchableOpacity
+              style={[styles.submitButton, isLoading && styles.submitButtonDisabled]}
+              onPress={handleLogin}
+              disabled={isLoading}
+            >
+              <View style={styles.buttonContent}>
+                {isLoading && <ActivityIndicator size="small" color="#FFFFFF" style={styles.spinner} />}
+                <Text style={styles.submitButtonText}>
+                  {isLoading ? 'Logging in...' : 'Login'}
+                </Text>
               </View>
             </TouchableOpacity>
 
-          <View style={styles.signupContainer}>
-            <Text style={styles.signupText}>Don't have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-              <Text style={styles.signupLink}>Sign Up</Text>
-            </TouchableOpacity>
+            <View style={styles.signupContainer}>
+              <Text style={styles.signupText}>Don't have an account? </Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+                <Text style={styles.signupLink}>Sign Up</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -97,10 +95,6 @@ const LoginScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9f9f9',
-  },
-  scrollContainer: {
-    flexGrow: 1,
   },
   header: {
     padding: 20,
@@ -120,6 +114,7 @@ const styles = StyleSheet.create({
   form: {
     padding: 20,
     gap: 10,
+    backgroundColor: '#f9f9f9',
   },
   forgotPassword: {
     alignSelf: 'flex-end',
