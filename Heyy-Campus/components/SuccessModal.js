@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, Animated, Modal, StyleSheet } from 'react-native';
 
 const SuccessModal = ({ 
@@ -7,17 +7,18 @@ const SuccessModal = ({
   title = 'Success!', 
   message = 'Operation completed successfully', 
   buttonText = 'Done', 
-  backgroundColor = '#000080', 
+  backgroundColor = '#0077FF', 
   checkmarkColor = '#00FF7F', 
   customContainerStyle, 
   customButtonStyle, 
   customTitleStyle, 
   customMessageStyle 
 }) => {
-  const checkmarkScale = new Animated.Value(0);
+  const checkmarkScale = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (visible) {
+      checkmarkScale.setValue(0);
       Animated.spring(checkmarkScale, {
         toValue: 1,
         tension: 40,
@@ -66,13 +67,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(42, 129, 243, 0.5)',
   },
   content: {
     width: '80%',
     padding: 20,
     borderRadius: 10,
     alignItems: 'center',
+    backgroundColor: '#007AFF',
   },
   title: {
     fontSize: 24,

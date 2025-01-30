@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator, SafeAreaView } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { CustomInput } from '../components/CustomInput';
-import SuccessModal from '../components/SuccessModal';
 import { AuthContext } from '../context/AuthContext';
 
 const PasswordRequirements = ({ password }) => {
@@ -15,73 +15,95 @@ const PasswordRequirements = ({ password }) => {
   return (
     <View style={styles.requirementsContainer}>
       {requirements.map(({ label, met }) => (
-        <View key={label} style={styles.requirementRow}>
-          <Text style={[styles.requirementDot, { color: met ? '#4CAF50' : '#757575' }]}>{met ? '●' : '○'}</Text>
-          <Text style={[styles.requirementText, { color: met ? '#4CAF50' : '#757575' }]}>{label}</Text>
+        <View field={label} style={styles.requirementRow}>
+          <Text style={[styles.requirementDot, met ? styles.requirementMet : styles.requirementUnmet]}>
+            {met ? '●' : '○'}
+          </Text>
+          <Text style={[styles.requirementText, met ? styles.requirementMet : styles.requirementUnmet]}>
+            {label}
+          </Text>
         </View>
       ))}
     </View>
   );
 };
 
-const SignupScreen = ({ navigation }) => {
+const SignupScreen = () => {
+  const navigation = useNavigation();
   const [userInfo, setUserInfo] = useState({
     fname: '',
     lname: '',
+    phone: '',
     email: '',
     password: '',
   });
   
-  const [isModalVisible, setIsModalVisible] = useState(false);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const { register, authLoading } = useContext(AuthContext);
 
   const validatePassword = (password) => {
-    const requirements = [
-      { label: 'At least 8 characters', met: password.length >= 8 },
-      { label: 'One uppercase letter', met: /[A-Z]/.test(password) },
-      { label: 'One number', met: /\d/.test(password) },
-      { label: 'One special character', met: /[@$!%*?&]/.test(password) }
-    ];
-    return requirements.every(req => req.met);
+    return (
+      password.length >= 8 &&
+      /[A-Z]/.test(password) &&
+      /\d/.test(password) &&
+      /[@$!%*?&]/.test(password)
+    );
   };
 
   const validateForm = () => {
     const newErrors = {};
-    if (!userInfo.fname.trim()) newErrors.fname = 'First name is required';
-    if (!userInfo.lname.trim()) newErrors.lname = 'Last name is required';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userInfo.email)) newErrors.email = 'Valid email is required';
-    if (!validatePassword(userInfo.password)) newErrors.password = 'Password does not meet requirements';
+    const trimmedFname = userInfo.fname.trim();
+    const trimmedLname = userInfo.lname.trim();
+    const trimmedPhone = userInfo.phone.trim();
+    const trimmedEmail = userInfo.email.trim();
+
+    if (!trimmedFname) newErrors.fname = 'First name is required';
+    if (!trimmedLname) newErrors.lname = 'Last name is required';
+    if (!trimmedPhone) {
+      newErrors.phone = 'Phone number is required';
+    } else if (!/^\d{10}$/.test(trimmedPhone)) { 
+      newErrors.phone = 'Please enter a valid 10-digit number';
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      newErrors.email = 'Valid email is required';
+    }
+    if (!validatePassword(userInfo.password)) {
+      newErrors.password = 'Password requirements not met';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSignup = async () => {
-    const allTouched = Object.keys(userInfo).reduce((acc, key) => ({ ...acc, [key]: true }), {});
-    setTouched(allTouched);
+    setTouched(Object.keys(userInfo).reduce((touched, field) => ({ ...touched, [field]: true }), {}));
+    
+    if (!validateForm()) return;
 
-    if (validateForm()) {
-      try {
-        const formattedUserInfo = {
-          fname: userInfo.fname.trim(),
-          lname: userInfo.lname.trim(),
-          email: userInfo.email.trim().toLowerCase(),
-          password: userInfo.password
-        };
-
-        await register(formattedUserInfo);
-        setUserInfo({ fname: '', lname: '', email: '', password: ''});
-        setErrors({});
-        setTouched({});
-        setIsModalVisible(true);
-      } catch (error) {
-        console.error('Signup error:', error);
-        setErrors(prev => ({
-          ...prev,
-          submit: error.message || 'Failed to create account. Please try again.'
-        }));
-      }
+    try {
+      await register({
+        fname: userInfo.fname.trim(),
+        lname: userInfo.lname.trim(),
+        phone: userInfo.phone.trim(),
+        email: userInfo.email.trim().toLowerCase(),
+        password: userInfo.password
+      });
+      setUserInfo({
+        fname: '',
+        lname: '',
+        phone: '',
+        email: '',
+        password: ''
+      });
+      // debugger;
+      console.log('User registered successfully: ', userInfo);
+    } catch (error) {
+      console.error('Signup Error:', error);
+      setErrors(prev => ({
+        ...prev,
+        submit: error.message || 'Account creation failed. Please try again.'
+      }));
     }
   };
 
@@ -101,46 +123,67 @@ const SignupScreen = ({ navigation }) => {
         <Text style={styles.title}>Create Your Account</Text>
         <Text style={styles.subtitle}>Sign up as Parent</Text>
       </View>
-      <ScrollView>
+      
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.form}>
           <CustomInput
-            label="First Name"
+            label="First Name *"
             value={userInfo.fname}
             onChangeText={(text) => handleInputChange('fname', text)}
             onBlur={() => handleInputBlur('fname')}
-            error={touched.fname ? errors.fname : ''}
+            error={touched.fname && errors.fname}
             placeholder="Enter your first name"
+            autoCapitalize="words"
           />
+
           <CustomInput
-            label="Last Name"
+            label="Last Name *"
             value={userInfo.lname}
             onChangeText={(text) => handleInputChange('lname', text)}
             onBlur={() => handleInputBlur('lname')}
-            error={touched.lname ? errors.lname : ''}
+            error={touched.lname && errors.lname}
             placeholder="Enter your last name"
+            autoCapitalize="words"
           />
+
           <CustomInput
-            label="Email"
+            label="Phone Number *"
+            value={userInfo.phone}
+            onChangeText={(text) => handleInputChange('phone', text)}
+            onBlur={() => handleInputBlur('phone')}
+            error={touched.phone && errors.phone}
+            placeholder="Enter your phone number"
+            keyboardType="phone-pad"
+          />
+
+          <CustomInput
+            label="Email *"
             value={userInfo.email}
             onChangeText={(text) => handleInputChange('email', text)}
             onBlur={() => handleInputBlur('email')}
-            error={touched.email ? errors.email : ''}
+            error={touched.email && errors.email}
             placeholder="Enter your email"
             keyboardType="email-address"
             autoCapitalize="none"
           />
+
           <CustomInput
-            label="Password"
+            label="Password *"
             value={userInfo.password}
             onChangeText={(text) => handleInputChange('password', text)}
             onBlur={() => handleInputBlur('password')}
-            error={touched.password ? errors.password : ''}
-            placeholder="Enter your password"
+            error={touched.password && errors.password}
+            placeholder="Create a password"
             secureTextEntry
           />
-          {userInfo.password.length > 0 && <PasswordRequirements password={userInfo.password} />}
 
-          {errors.submit && <Text style={styles.errorText}>{errors.submit}</Text>}
+          {userInfo.password.length > 0 && (
+            <PasswordRequirements password={userInfo.password} />
+          )}
+
+          {errors.submit && (
+            <Text style={styles.errorText}>{errors.submit}</Text>
+          )}
 
           <TouchableOpacity
             style={[styles.submitButton, authLoading && styles.submitButtonDisabled]}
@@ -148,7 +191,9 @@ const SignupScreen = ({ navigation }) => {
             disabled={authLoading}
           >
             <View style={styles.buttonContent}>
-              {authLoading && <ActivityIndicator size="small" color="#FFFFFF" style={styles.spinner} />}
+              {authLoading && (
+                <ActivityIndicator size="small" color="#FFFFFF" style={styles.spinner} />
+              )}
               <Text style={styles.submitButtonText}>
                 {authLoading ? 'Creating Account...' : 'Create Account'}
               </Text>
@@ -162,17 +207,6 @@ const SignupScreen = ({ navigation }) => {
             </TouchableOpacity>
           </View>
         </View>
-
-        <SuccessModal
-          visible={isModalVisible}
-          onClose={() => {
-            setIsModalVisible(false);
-            navigation.navigate('WelcomeScreen');
-          }}
-          title="Signup Successful!"
-          message="Your account has been created successfully."
-          buttonText="Continue"
-        />
       </ScrollView>
     </SafeAreaView>
   );
@@ -183,62 +217,62 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#007AFF',
   },
-  form: {
-    padding: 20,
-    backgroundColor: '#FFFFFF',
-  },
   header: {
     padding: 20,
     backgroundColor: '#007AFF',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: '#ffffff',
+    marginBottom: 8,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#FFFFFF',
-    opacity: 0.9,
+    fontSize: 18,
+    color: '#ffffff',
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
+  form: {
+    flex: 1,
+    padding: 20,
+    gap: 10,
+    backgroundColor: '#ffffff',
   },
   requirementsContainer: {
-    marginTop: -8,
-    marginBottom: 8,
-    paddingHorizontal: 4,
+    marginVertical: 8,
   },
   requirementRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 2,
+    marginVertical: 4,
   },
   requirementDot: {
-    marginRight: 8,
     fontSize: 12,
+    marginRight: 8,
   },
   requirementText: {
-    fontSize: 12,
+    fontSize: 14,
+  },
+  requirementMet: {
+    color: '#4CAF50',
+  },
+  requirementUnmet: {
+    color: '#757575',
   },
   submitButton: {
     backgroundColor: '#007AFF',
     padding: 16,
     borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 8,
+    marginTop: 24,
   },
   submitButtonDisabled: {
-    opacity: 0.7,
+    opacity: 0.6,
   },
   submitButtonText: {
-    color: '#FFFFFF',
+    color: '#ffffff',
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -246,18 +280,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  spinner: {
-    marginRight: 8,
+    gap: 8,
   },
   loginContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 16,
   },
   loginText: {
-    color: '#666666',
+    color: '#666',
     fontSize: 16,
   },
   loginLink: {
@@ -269,7 +299,6 @@ const styles = StyleSheet.create({
     color: '#FF3B30',
     fontSize: 14,
     textAlign: 'center',
-    marginTop: 8,
   }
 });
 

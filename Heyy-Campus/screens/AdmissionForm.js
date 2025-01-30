@@ -3,8 +3,6 @@ import { StyleSheet, Text, View, TextInput, ScrollView, TouchableOpacity, Alert,
 import ModalDropdown from 'react-native-modal-dropdown';
 import * as DocumentPicker from 'expo-document-picker';
 import { useAdmission } from '../context/AdmissionContext';
-import admissionService from '../services/admissiomService';
-// import CustomInput from '../components/CustomInput';
 import SuccessModal from '../components/SuccessModal';
 
 const INITIAL_FORM_STATE = {

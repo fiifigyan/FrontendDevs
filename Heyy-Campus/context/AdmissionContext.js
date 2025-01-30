@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import admissionService from '../services/admissiomService';
-import { AuthContext } from './AuthContext';
+import admissionService from '../services/admissionService';
+import { AuthContext } from '../context/AuthContext';
 
 export const AdmissionContext = createContext();
 
@@ -10,13 +10,45 @@ export const AdmissionProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [validationErrors, setValidationErrors] = useState({});
+    const [isDirty, setIsDirty] = useState(false);
 
     useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            if (error) setError(null);
-        }, 5000);
-        return () => clearTimeout(timeoutId);
+        const initializeForm = async () => {
+            try {
+                setIsLoading(true);
+                const draft = await admissionService.loadFormDraft();
+                if (draft) {
+                    setFormData(draft);
+                    setIsDirty(true);
+                }
+            } catch (error) {
+                setError('Failed to load saved form data');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        initializeForm();
+    }, []);
+
+    useEffect(() => {
+        if (error) {
+            const timeoutId = setTimeout(() => setError(null), 5000);
+            return () => clearTimeout(timeoutId);
+        }
     }, [error]);
+
+    useEffect(() => {
+        if (formData && isDirty) {
+            const timeoutId = setTimeout(() => {
+                admissionService.saveFormDraft(formData).catch(err => {
+                    setError('Failed to save draft: ' + err.message);
+                });
+            }, 1000);
+
+            return () => clearTimeout(timeoutId);
+        }
+    }, [formData, isDirty]);
 
     const clearError = useCallback(() => {
         setError(null);
@@ -28,80 +60,21 @@ export const AdmissionProvider = ({ children }) => {
             ...updates
         }));
         setValidationErrors({});
+        setIsDirty(true);
     }, []);
 
-    const saveFormDraft = useCallback(async (data) => {
+    const validateForm = useCallback(async () => {
+        if (!formData) return { isValid: false, errors: { general: 'No form data available' } };
+
         try {
-            await admissionService.saveFormDraft(data || formData);
+            const validation = await admissionService.validateForm(formData);
+            setValidationErrors(validation.errors);
+            return validation;
         } catch (error) {
-            setError('Failed to save draft. Please try again.');
+            setError('Validation failed: ' + error.message);
+            return { isValid: false, errors: {} };
         }
     }, [formData]);
-
-    const loadFormDraft = useCallback(async () => {
-        try {
-            const draft = await admissionService.loadFormDraft();
-            if (draft) {
-                setFormData(draft);
-            }
-            return draft;
-        } catch (error) {
-            setError('Failed to load saved draft.');
-            return null;
-        }
-    }, []);
-
-    const validateForm = useCallback(async (data) => {
-        const errors = {};
-        
-        // Required fields validation
-        const requiredFields = [
-            { field: 'firstName', label: 'First Name' },
-            { field: 'lastName', label: 'Last Name' },
-            { field: 'dateOfBirth', label: 'Date of Birth' },
-            { field: 'email', label: 'Email' },
-            { field: 'phone', label: 'Phone Number' },
-            { field: 'address', label: 'Address' },
-            { field: 'programSelection', label: 'Program Selection' }
-        ];
-
-        requiredFields.forEach(({ field, label }) => {
-            if (!data[field] || data[field].trim() === '') {
-                errors[field] = `${label} is required`;
-            }
-        });
-
-        // Email validation
-        if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
-            errors.email = 'Please enter a valid email address';
-        }
-
-        // Phone validation
-        if (data.phone && !/^\+?[\d\s-]{10,}$/.test(data.phone)) {
-            errors.phone = 'Please enter a valid phone number';
-        }
-
-        // Date of Birth validation
-        if (data.dateOfBirth) {
-            const dob = new Date(data.dateOfBirth);
-            const today = new Date();
-            if (dob > today) {
-                errors.dateOfBirth = 'Date of Birth cannot be in the future';
-            }
-        }
-
-        // Optional fields validation (only if they're filled)
-        if (data.website && !/^https?:\/\/.*/.test(data.website)) {
-            errors.website = 'Please enter a valid URL starting with http:// or https://';
-        }
-
-        if (data.alternateEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.alternateEmail)) {
-            errors.alternateEmail = 'Please enter a valid alternate email address';
-        }
-
-        setValidationErrors(errors);
-        return Object.keys(errors).length === 0;
-    }, []);
 
     const submitForm = useCallback(async () => {
         setIsLoading(true);
@@ -110,9 +83,8 @@ export const AdmissionProvider = ({ children }) => {
 
         try {
             // Validate form
-            const isValid = await validateForm(formData);
-            if (!isValid) {
-                setIsLoading(false);
+            const validation = await validateForm();
+            if (!validation.isValid) {
                 throw new Error('Please fill in all required fields correctly.');
             }
 
@@ -123,13 +95,17 @@ export const AdmissionProvider = ({ children }) => {
                 submissionDate: new Date().toISOString()
             });
 
-            setIsLoading(false);
-            return response;
+            // Clear form data and draft after successful submission
+            setFormData(null);
+            setIsDirty(false);
+            await admissionService.clearFormDraft();
 
+            return response;
         } catch (error) {
-            setIsLoading(false);
             setError(error.message || 'Failed to submit form. Please try again.');
             return null;
+        } finally {
+            setIsLoading(false);
         }
     }, [formData, userInfo, validateForm]);
 
@@ -138,12 +114,13 @@ export const AdmissionProvider = ({ children }) => {
         isLoading,
         error,
         validationErrors,
+        isDirty,
         clearError,
         updateFormData,
-        saveFormDraft,
-        loadFormDraft,
         validateForm,
-        submitForm
+        submitForm,
+        saveFormDraft: admissionService.saveFormDraft,
+        loadFormDraft: admissionService.loadFormDraft
     };
 
     return (
