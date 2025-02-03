@@ -34,9 +34,9 @@ const ProfileService = {
       );
     }
   },
-  updateProfile: async (profileData) => {
+  updateProfile: async (userInfo) => {
     try {
-      const response = await api.put('/parent/api/profile', profileData);
+      const response = await api.put('/parent/api/profile', userInfo);
       console.log('Profile Update Response:', {
         status: response.status,
         data: response.data

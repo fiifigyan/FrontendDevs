@@ -1,76 +1,48 @@
-import React, { useEffect, useState } from "react";
-import { StyleSheet, View, Text, Image, ScrollView, ActivityIndicator } from "react-native";
+import React, { useContext } from "react";
+import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity} from "react-native";
+import { AuthContext } from "../context/AuthContext";
+import Icon from 'react-native-vector-icons/Ionicons';
+import { useNavigation } from '@react-navigation/native';
 
 const ProfileScreen = () => {
-  const [profileData, setProfileData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { userInfo = {} } = useContext(AuthContext);
+  const navigation = useNavigation();
 
-  // Fetch data from API
-  useEffect(() => {
-    const fetchProfileData = async () => {
-      try {
-        // Replace this URL with your actual API endpoint
-        const response = await fetch("https://api.example.com/student-profile");
-        const data = await response.json();
-        setProfileData(data);
-      } catch (err) {
-        setError("Failed to load profile data.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProfileData();
-  }, []);
-
-  if (loading) {
-    return (
-      <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color="#1E88E5" />
-        <Text>Loading profile...</Text>
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>{error}</Text>
-      </View>
-    );
-  }
+  const profileImage = userInfo?.profileImage || require("../assets/images/fiifi1.jpg");
+  const fullName = [userInfo?.fname, userInfo?.lname].filter(Boolean).join(' ') || "N/A";
+  const description = userInfo?.description || "No description available.";
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { paddingBottom: 16 }]}>
-      {/* Profile Header */}
       <View style={styles.header}>
         <Image
-          source={{ uri: profileData.profileImage || "https://via.placeholder.com/100" }}
+          source={typeof profileImage === 'string' ? { uri: profileImage } : profileImage}
           style={styles.profileImage}
-          accessibilityLabel={`Profile picture of ${profileData.name || "student"}`}
+          accessibilityLabel={`Profile picture of ${fullName}`}
         />
-        <Text style={styles.name}>{profileData.name || "N/A"}</Text>
-        <Text style={styles.classText}>Class - {profileData.class || "N/A"}</Text>
-        <Text style={styles.description}>
-          {profileData.description || "No description available."}
-        </Text>
+        <Text style={styles.name}>{fullName}</Text>
+        <TouchableOpacity
+          style={styles.editProfileButton}
+          onPress={() => {navigation.navigate('EditProfile')}}
+        >
+          <Icon name="create-outline" size={22} color="#FFF" />
+        </TouchableOpacity>
+        <Text style={styles.description}>{description}</Text>
       </View>
 
       {/* Student Details */}
       <View style={styles.detailsCard}>
-        <DetailRow label="Date of Birth" value={profileData.dob} />
-        <DetailRow label="Class" value={profileData.class} />
-        <DetailRow label="Roll Number" value={profileData.rollNumber} />
-        <DetailRow label="Parent's Number" value={profileData.parentNumber} />
-        <DetailRow label="Father/Mother's Name" value={profileData.parentName} />
-        <DetailRow label="Address" value={profileData.address} />
+        <DetailRow label="Phone Number:" value={userInfo?.parentNumber} />
+        <DetailRow label="Relationship:" value={userInfo?.parentName} />
+        <DetailRow label="Address:" value={userInfo?.address} />
+        <DetailRow label="Email:" value={userInfo?.email} />
+        <DetailRow label="Occupation:" value={userInfo?.occupation} />
+
       </View>
     </ScrollView>
   );
 };
 
-// Component for rendering a single row in the details card
 const DetailRow = ({ label, value }) => (
   <View style={styles.row}>
     <Text style={styles.rowLabel}>{label}</Text>
@@ -119,6 +91,12 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#fff",
   },
+  editProfileButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+  },
+
   classText: {
     fontSize: 14,
     color: "#fff",

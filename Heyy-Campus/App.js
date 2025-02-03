@@ -5,7 +5,6 @@ import { AuthProvider, AuthContext } from './context/AuthContext';
 import { AdmissionProvider } from './context/AdmissionContext';
 import AuthStack from './navigation/AuthStack';
 import DrawerNavigator from './navigation/StackNavigator';
-import AdmissionForm from './screens/AdmissionForm';
 
 function AppContent() {
   const { userInfo } = useContext(AuthContext);
