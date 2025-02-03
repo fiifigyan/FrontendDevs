@@ -1,15 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { 
-  StyleSheet, 
-  Text, 
-  View, 
-  TextInput, 
-  ScrollView, 
-  TouchableOpacity, 
-  ActivityIndicator, 
-  SafeAreaView, 
-  Alert 
-} from 'react-native';
+import { StyleSheet, Text, View, TextInput, ScrollView, TouchableOpacity, ActivityIndicator, SafeAreaView, Alert,Platform } from 'react-native';
 import { DateTimePicker } from '@react-native-community/datetimepicker';
 import ModalDropdown from 'react-native-modal-dropdown';
 import * as DocumentPicker from 'expo-document-picker';
@@ -31,18 +21,14 @@ const DROPDOWN_OPTIONS = {
 
 const AdmissionForm = () => {
   const navigation = useNavigation();
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  // const [showDatePicker, setShowDatePicker] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const { 
-    formData, 
-    isLoading, 
-    validationErrors, 
-    updateFormData, 
-    submitForm 
-  } = useContext(AdmissionContext);
+  const { formData, isLoading, validationErrors, updateFormData, submitForm } = useContext(AdmissionContext);
 
   const handleDateChange = (event, selectedDate) => {
-    setShowDatePicker(false);
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+    }
     if (selectedDate) {
       handleChange('studentInfo.dateOfBirth', selectedDate.toISOString().split('T')[0]);
     }
@@ -61,58 +47,80 @@ const AdmissionForm = () => {
       const result = await DocumentPicker.getDocumentAsync({
         type: ['application/pdf', 'image/jpeg', 'image/png'],
         copyToCacheDirectory: true,
+        multiple: false
       });
 
-      if (result.type === 'success') {
+      if (result.assets && result.assets.length > 0) {
+        const file = result.assets[0];
         handleChange(`documents.${field}`, {
-          name: result.name,
-          uri: result.uri,
-          type: result.mimeType,
+          name: file.name,
+          uri: file.uri,
+          type: file.mimeType || 'application/octet-stream',
+          size: file.size
         });
       }
     } catch (error) {
-      if (!error.message.includes('DocumentPicker cancelled')) {
+      if (!DocumentPicker.isCancel(error)) {
         Alert.alert('Error', 'Failed to select document. Please try again.');
+        console.error('Document picker error:', error);
       }
     }
   };
 
-  const renderInput = (label, path, keyboardType = 'default', isDate = false) => {
+  const renderInput = (label, path, keyboardType = 'default') => {
     const value = path.split('.').reduce((obj, key) => obj?.[key], formData) || '';
     
     return (
       <View style={styles.inputContainer}>
         <Text style={styles.label}>{label}</Text>
-        {isDate ? (
-            <>
-              <TouchableOpacity onPress={() => setShowDatePicker(true)}>
-                <TextInput
-                  style={[styles.input, validationErrors[path] && styles.errorInput]}
-                  value={value}
-                  placeholder="YYYY-MM-DD"
-                  editable={false}
-                  pointerEvents="none"
-                />
-              </TouchableOpacity>
-              {showDatePicker && (
-                <DateTimePicker
-                  value={new Date(value || Date.now())}
-                  mode="date"
-                  display="spinner"
-                  onChange={handleDateChange}
-                  maximumDate={new Date()}
-                />
-              )}
-            </>
-          ) : (
-          <TextInput
-            style={[styles.input, validationErrors[path] && styles.errorInput]}
-            value={value}
-            onChangeText={text => handleChange(path, text)}
-            keyboardType={keyboardType}
-          />
-        )}
+        <TextInput
+          style={[styles.input, validationErrors[path] && styles.errorInput]}
+          value={value}
+          onChangeText={text => handleChange(path, text)}
+          keyboardType={keyboardType}
+        />
         {validationErrors[path] && <Text style={styles.errorText}>{validationErrors[path]}</Text>}
+      </View>
+    );
+  };
+
+  const renderDateInput = (label, path) => {
+    const value = path.split('.').reduce((obj, key) => obj?.[key], formData) || '';
+    
+    return (
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>{label}</Text>
+        <View style={styles.dateInputContainer}>
+          <TextInput
+            style={[
+              styles.input,
+              styles.dateInput,
+              validationErrors[path] && styles.errorInput
+            ]}
+            value={value}
+            placeholder="YYYY-MM-DD"
+            onChangeText={(text) => handleChange(path, text)}
+            keyboardType={Platform.OS === 'ios' ? 'default' : 'numeric'}
+          />
+          {/* <TouchableOpacity
+            style={styles.calendarButton}
+            onPress={() => setShowDatePicker(true)}
+          >
+            <Text style={styles.calendarButtonText}>📅</Text>
+          </TouchableOpacity> */}
+        </View>
+        {/* {showDatePicker && (
+          <DateTimePicker
+            value={value ? new Date(value) : new Date()}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={handleDateChange}
+            maximumDate={new Date()}
+          />
+        )} */}
+        {validationErrors[path] && (
+          <Text style={styles.errorText}>{validationErrors[path]}</Text>
+        )}
       </View>
     );
   };
@@ -120,12 +128,11 @@ const AdmissionForm = () => {
   const renderDropdown = (label, path, options) => {
     const currentValue = path.split('.').reduce((obj, key) => obj?.[key], formData);
     const isBooleanField = path.includes('hasSibling');
-  
-    // Convert boolean to string for dropdown display
+    
     const displayValue = isBooleanField
       ? currentValue ? 'Yes' : 'No'
       : currentValue || options[0];
-  
+    
     return (
       <View style={styles.inputContainer}>
         <Text style={styles.label}>{label}</Text>
@@ -133,37 +140,56 @@ const AdmissionForm = () => {
           options={options}
           defaultValue={displayValue}
           onSelect={(index, value) => {
-            // Convert back to boolean if needed
             const finalValue = isBooleanField ? value === 'Yes' : value;
             handleChange(path, finalValue);
           }}
           style={[styles.dropdown, validationErrors[path] && styles.errorInput]}
           textStyle={styles.dropdownText}
           dropdownStyle={styles.dropdownList}
+          dropdownTextStyle={styles.dropdownText}
         />
         {validationErrors[path] && <Text style={styles.errorText}>{validationErrors[path]}</Text>}
       </View>
     );
   };
+
   const renderDocumentUpload = (label, field) => {
     const document = formData.documents?.[field] || {};
     
     return (
       <View style={styles.inputContainer}>
         <Text style={styles.label}>{label}</Text>
-        <TouchableOpacity
-          style={[styles.uploadButton, validationErrors[`documents.${field}`] && styles.errorInput]}
-          onPress={() => handleDocumentPick(field)}
-        >
-          <Text style={styles.uploadText}>
-            {document.name || 'Tap to upload'}
-          </Text>
+        <View style={styles.documentContainer}>
+          <TouchableOpacity
+            style={[
+              styles.uploadButton,
+              validationErrors[`documents.${field}`] && styles.errorInput,
+              document.uri && styles.uploadButtonSuccess
+            ]}
+            onPress={() => handleDocumentPick(field)}
+          >
+            <Text style={[
+              styles.uploadText,
+              document.uri && styles.uploadTextSuccess
+            ]}>
+              {document.uri ? '📎 Change file' : '📎 Select file'}
+            </Text>
+          </TouchableOpacity>
           {document.uri && (
-            <Text style={styles.uploadSuccess}>✓ Selected</Text>
+            <View style={styles.fileInfo}>
+              <Text style={styles.fileName} numberOfLines={1}>
+                {document.name}
+              </Text>
+              <Text style={styles.fileSize}>
+                {(document.size / (1024 * 1024)).toFixed(2)} MB
+              </Text>
+            </View>
           )}
-        </TouchableOpacity>
+        </View>
         {validationErrors[`documents.${field}`] && (
-          <Text style={styles.errorText}>{validationErrors[`documents.${field}`]}</Text>
+          <Text style={styles.errorText}>
+            {validationErrors[`documents.${field}`]}
+          </Text>
         )}
       </View>
     );
@@ -204,7 +230,7 @@ const AdmissionForm = () => {
         {/* Student Information */}
         <Text style={styles.sectionHeader}>Student Information</Text>
         {renderInput('Full Name *', 'studentInfo.fullName')}
-        {renderInput('Date of Birth *', 'studentInfo.dateOfBirth', 'default', true)}
+        {renderDateInput('Date of Birth *', 'studentInfo.dateOfBirth')}
         {renderDropdown('Gender *', 'studentInfo.gender', DROPDOWN_OPTIONS.gender)}
         {renderInput('Nationality *', 'studentInfo.nationality')}
         {renderInput('Religion *', 'studentInfo.religion')}
@@ -266,15 +292,15 @@ const AdmissionForm = () => {
             <Text style={styles.submitText}>Submit Application</Text>
           )}
         </TouchableOpacity>
-
-        <SuccessModal
-          visible={showSuccessModal}
-          onClose={() => {
-            setShowSuccessModal(false);
-            navigation.navigate('Home');
-          }}
-        />
       </ScrollView>
+
+      <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => {
+          setShowSuccessModal(false);
+          navigation.navigate('Home');
+        }}
+      />
     </SafeAreaView>
   );
 };
@@ -349,29 +375,29 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   uploadButton: {
-    backgroundColor: 'white',
+    backgroundColor: '#007AFF',
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#bdc3c7',
   },
   uploadText: {
-    color: '#7f8c8d',
+    color: '#fff',
   },
   uploadSuccess: {
-    color: '#4CAF50',
+    color: 'red',
     fontSize: 12,
     marginTop: 5,
   },
   submitButton: {
-    backgroundColor: '#3498db',
+    backgroundColor: '#007AFF',
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 25,
   },
   disabledButton: {
-    backgroundColor: '#bdc3c7',
+    backgroundColor: '#3498db',
   },
   submitText: {
     color: 'white',

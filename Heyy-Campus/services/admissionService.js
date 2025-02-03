@@ -1,6 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system';
+import { Platform } from 'react-native';
 import { config } from '../config';
 
 const logger = {
@@ -11,7 +12,7 @@ const logger = {
 const admissionApiClient = axios.create({
   baseURL: config.ADMISSION_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
-  timeout: 15000,
+  timeout: 20000,
 });
 
 const REQUIRED_FIELDS = {
@@ -21,6 +22,20 @@ const REQUIRED_FIELDS = {
   admissionDetails: ['classForAdmission', 'academicYear', 'preferredSecondLanguage', 'siblingInSchool.hasSibling'],
   medicalInfo: ['bloodGroup', 'emergencyContact.name', 'emergencyContact.number', 'allergiesOrConditions'],
   documents: ['birthCertificate', 'previousReportCard', 'passportPhotos'],
+};
+
+const ALLOWED_FILE_TYPES = [
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+  'image/jpg'
+];
+
+const resolveFileUri = (uri) => {
+  if (uri && typeof uri === 'object') {
+    return uri.uri || uri._W || uri._X;
+  }
+  return uri;
 };
 
 const admissionService = {
@@ -33,14 +48,8 @@ const admissionService = {
 
       await Promise.all(
         Object.entries(formData.documents || {}).map(async ([key, fileInfo]) => {
-          if (!fileInfo) {
-            throw new Error(`Missing required document: ${key}`);
-          }
-          try {
-            await this.validateDocument(fileInfo.uri, key);
-          } catch (error) {
-            throw new Error(`Document validation failed for ${key}: ${error.message}`);
-          }
+          if (!fileInfo) throw new Error(`Missing required document: ${key}`);
+          await this.validateDocument(fileInfo);
         })
       );
 
@@ -51,21 +60,29 @@ const admissionService = {
       }));
 
       for (const [key, fileInfo] of Object.entries(formData.documents || {})) {
+        const resolvedUri = resolveFileUri(fileInfo.uri);
+        
         formSubmissionData.append(key, {
-          uri: fileInfo.uri,
+          uri: resolvedUri,
           name: fileInfo.name,
           type: fileInfo.type,
+          ...(Platform.OS === 'android' && {
+            uri: resolvedUri,
+            type: fileInfo.type,
+            name: fileInfo.name
+          })
         });
       }
 
-      const response = await admissionApiClient.post('/api/admission/save', formSubmissionData, {
+      const response = await admissionApiClient.post('/api/admissions/save', formSubmissionData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          'Accept': 'application/json'
         },
+        transformRequest: () => formSubmissionData,
       });
 
       await this.clearFormDraft();
-      
       return response.data;
     } catch (error) {
       logger.error('Admission form submission failed', error);
@@ -73,12 +90,51 @@ const admissionService = {
     }
   },
 
+  async validateDocument(fileInfo) {
+    try {
+      if (!fileInfo) throw new Error('Invalid file information');
+      
+      const resolvedUri = resolveFileUri(fileInfo.uri);
+      if (!resolvedUri) throw new Error('Missing file URI');
+
+      const finalUri = resolvedUri.startsWith('file://') 
+        ? resolvedUri 
+        : FileSystem.documentDirectory + resolvedUri;
+
+      const fileStats = await FileSystem.getInfoAsync(finalUri);
+      if (!fileStats.exists) throw new Error('File not found');
+
+      const fileSize = fileStats.size / (1024 * 1024);
+      if (fileSize > 5) throw new Error('File size exceeds 5MB limit');
+
+      const mimeType = fileInfo.type || this.getMimeType(fileInfo.name);
+      if (!mimeType || !ALLOWED_FILE_TYPES.includes(mimeType)) {
+        throw new Error('Invalid file type. Allowed: PDF, JPEG, PNG');
+      }
+
+      return true;
+    } catch (error) {
+      logger.error('Document validation failed', error);
+      throw error;
+    }
+  },
+
+  getMimeType(filename) {
+    const ext = filename?.toLowerCase().split('.').pop() || '';
+    const mimeTypes = {
+      'pdf': 'application/pdf',
+      'jpg': 'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'png': 'image/png'
+    };
+    return mimeTypes[ext];
+  },
+
   async validateForm(formData) {
     const errors = {};
     const checkField = (obj, path) => path.split('.').reduce((value, key) => (value === undefined || value === null) ? undefined : value[key], obj);
     const isEmptyValue = (value) => !value || (typeof value === 'string' && value.trim() === '');
 
-    // Validate all required fields
     Object.entries(REQUIRED_FIELDS).forEach(([section, fields]) => {
       fields.forEach((field) => {
         const fullPath = `${section}.${field}`;
@@ -90,7 +146,6 @@ const admissionService = {
       });
     });
 
-    // Validate sibling details if hasSibling is true
     if (formData.admissionDetails?.siblingInSchool?.hasSibling === true) {
       if (isEmptyValue(formData.admissionDetails.siblingInSchool.siblingDetails?.name)) {
         errors['admissionDetails.siblingInSchool.siblingDetails.name'] = 'Sibling name is required';
@@ -100,13 +155,11 @@ const admissionService = {
       }
     }
 
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.parentInfo?.emailAddress && !emailRegex.test(formData.parentInfo.emailAddress.trim())) {
       errors['parentInfo.emailAddress'] = 'Invalid email address';
     }
 
-    // Validate phone numbers
     const phoneRegex = /^\+?[1-9]\d{1,14}$/;
     ['parentInfo.contactNumber', 'medicalInfo.emergencyContact.number'].forEach((field) => {
       const value = checkField(formData, field);
@@ -118,37 +171,14 @@ const admissionService = {
     return { isValid: Object.keys(errors).length === 0, errors };
   },
 
-  async validateDocument(documentUri, documentType) {
-    try {
-      const fileInfo = await FileSystem.getInfoAsync(documentUri);
-      if (!fileInfo.exists) throw new Error('File not found');
-
-      const fileSize = fileInfo.size / (1024 * 1024);
-      if (fileSize > 5) throw new Error('File size exceeds 5MB limit');
-
-      const mimeType = await FileSystem.getMimeTypeAsync(documentUri);
-      const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
-      if (!allowedTypes.includes(mimeType)) {
-        throw new Error('Invalid file type. Allowed: JPEG, PNG, PDF');
-      }
-
-      return true;
-    } catch (error) {
-      logger.error(`Document validation failed for ${documentType}`, error);
-      throw error;
-    }
-  },
-
   async saveFormDraft(formData) {
     try {
       await AsyncStorage.setItem('admission_draft', JSON.stringify({
         formData,
         timestamp: new Date().toISOString()
       }));
-      logger.info('Draft saved successfully');
       return true;
     } catch (error) {
-      logger.error('Failed to save draft', error);
       throw new Error('Failed to save draft');
     }
   },
@@ -158,7 +188,6 @@ const admissionService = {
       const draft = await AsyncStorage.getItem('admission_draft');
       return draft ? JSON.parse(draft).formData : null;
     } catch (error) {
-      logger.error('Failed to load draft', error);
       return null;
     }
   },
@@ -166,7 +195,6 @@ const admissionService = {
   async clearFormDraft() {
     try {
       await AsyncStorage.removeItem('admission_draft');
-      logger.info('Draft cleared successfully');
     } catch (error) {
       logger.error('Failed to clear draft', error);
     }

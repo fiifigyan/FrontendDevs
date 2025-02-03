@@ -190,14 +190,19 @@ const SignupScreen = () => {
             onPress={handleSignup}
             disabled={isLoading}
           >
-            <View style={styles.buttonContent}>
+            {isLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.submitText}>Create Account</Text>
+            )}
+            {/* <View style={styles.buttonContent}>
               {isLoading && (
                 <ActivityIndicator size="small" color="#FFFFFF" style={styles.spinner} />
               )}
               <Text style={styles.submitButtonText}>
                 {isLoading ? 'Creating Account...' : 'Create Account'}
               </Text>
-            </View>
+            </View> */}
           </TouchableOpacity>
 
           <View style={styles.loginContainer}>
