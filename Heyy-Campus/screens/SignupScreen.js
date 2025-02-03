@@ -40,7 +40,7 @@ const SignupScreen = () => {
   
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
-  const { register, authLoading } = useContext(AuthContext);
+  const { register, isLoading } = useContext(AuthContext);
 
   const validatePassword = (password) => {
     return (
@@ -186,16 +186,16 @@ const SignupScreen = () => {
           )}
 
           <TouchableOpacity
-            style={[styles.submitButton, authLoading && styles.submitButtonDisabled]}
+            style={[styles.submitButton, isLoading && styles.submitButtonDisabled]}
             onPress={handleSignup}
-            disabled={authLoading}
+            disabled={isLoading}
           >
             <View style={styles.buttonContent}>
-              {authLoading && (
+              {isLoading && (
                 <ActivityIndicator size="small" color="#FFFFFF" style={styles.spinner} />
               )}
               <Text style={styles.submitButtonText}>
-                {authLoading ? 'Creating Account...' : 'Create Account'}
+                {isLoading ? 'Creating Account...' : 'Create Account'}
               </Text>
             </View>
           </TouchableOpacity>

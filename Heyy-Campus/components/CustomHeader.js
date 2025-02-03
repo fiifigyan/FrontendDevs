@@ -1,24 +1,26 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useDrawerStatus, DrawerActions } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { AuthContext } from '../context/AuthContext';
 
-const CustomHeader = ({ title, onMenuPress }) => {
+const CustomHeader = () => {
   const navigation = useNavigation();
+  const { userInfo } = useContext(AuthContext);
   
   return (
     <View style={styles.header}>
-      <TouchableOpacity onMenuPress={() => navigation.openDrawer()}>
-        <Image 
-          source={require('../assets/icon.png')} 
-          style={{ width: 50, height: 50, borderRadius: '50%', borderWidth: 1, borderColor: '#fff' }} 
-        />
-        <Text style={styles.headerText}>Welcome to Heyy Campus</Text>
+      <TouchableOpacity onPress={() => { 
+          navigation.dispatch(DrawerActions.openDrawer());
+      }}>
+      <Image 
+        source={userInfo?.profileImageUrl ? { uri: userInfo.profileImageUrl } : require('../assets/images/fiifi1.jpg')} 
+        style={styles.profileImage}
+      />
+
       </TouchableOpacity>
 
-      <Text style={styles.title}>{title}</Text>
-
-      <TouchableOpacity onPress={() => navigation.navigate('Notifications')} >
+      <TouchableOpacity onPress={() => navigation.navigate('Notifications')}>
         <Icon name="notifications" size={25} color="#fff" />
       </TouchableOpacity>
     </View>
@@ -39,6 +41,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+  profileImage: {
+    width: 50, 
+    height: 50, 
+    borderRadius: 25,
+    borderWidth: 1, 
+    borderColor: '#fff'
+  }
 });
 
 export default CustomHeader;

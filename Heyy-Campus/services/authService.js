@@ -10,18 +10,15 @@ const api = axios.create({
   }
 });
 
-// Helper function to handle user data
 const processUserData = (data) => {
   if (!data) {
     throw new Error('No data received from server');
   }
 
-  // If data.userInfo exists, return it
   if (data.userInfo) {
     return data.userInfo;
   }
 
-  // If data itself is the user info, return the whole data object
   if (data.id || data._id || data.email) {
     return data;
   }
@@ -106,7 +103,7 @@ const AuthService = {
 
   checkAuthStatus: async () => {
     try {
-      const response = await api.get('/status');
+      const response = await api.get('/parent/api/status');
       console.log('Auth Status Response:', {
         status: response.status,
         data: response.data
@@ -119,9 +116,6 @@ const AuthService = {
         status: error.response?.status,
         message: error.message
       });
-      
-      // For auth status check, we return null instead of throwing
-      // as this is often used for initial app loading
       return null;
     }
   }

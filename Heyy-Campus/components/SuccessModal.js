@@ -1,115 +1,55 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, Animated, Modal, StyleSheet } from 'react-native';
+// src/components/SuccessModal.js
+import React from 'react';
+import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
-const SuccessModal = ({ 
-  visible, 
-  onClose, 
-  title = 'Success!', 
-  message = 'Operation completed successfully', 
-  buttonText = 'Done', 
-  backgroundColor = '#0077FF', 
-  checkmarkColor = '#00FF7F', 
-  customContainerStyle, 
-  customButtonStyle, 
-  customTitleStyle, 
-  customMessageStyle 
-}) => {
-  const checkmarkScale = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    if (visible) {
-      checkmarkScale.setValue(0);
-      Animated.spring(checkmarkScale, {
-        toValue: 1,
-        tension: 40,
-        useNativeDriver: true,
-      }).start();
-    }
-  }, [visible]);
-
-  return (
-    <Modal
-      transparent
-      visible={visible}
-      animationType="slide"
-      onRequestClose={onClose}
-    >
-      <View style={[styles.container, customContainerStyle]}>
-        <View style={[styles.content, { backgroundColor }]}>
-          <Text style={[styles.title, customTitleStyle]}>{title}</Text>
-          <Text style={[styles.subtitle, customMessageStyle]}>{message}</Text>
-
-          <Animated.View 
-            style={[
-              styles.checkmarkContainer,
-              { transform: [{ scale: checkmarkScale }] }
-            ]}
-          >
-            <View style={[styles.checkmark, { backgroundColor: checkmarkColor }]}>
-              <Text style={styles.checkmarkText}>✓</Text>
-            </View>
-          </Animated.View>
-
-          <TouchableOpacity 
-            style={[styles.button, customButtonStyle]} 
-            onPress={onClose}
-          >
-            <Text style={[styles.buttonText, { color: backgroundColor }]}>{buttonText}</Text>
-          </TouchableOpacity>
-        </View>
+const SuccessModal = ({ visible, onClose, title, message, buttonText }) => (
+  <Modal visible={visible} transparent={true}>
+    <View style={styles.centeredView}>
+      <View style={styles.modalView}>
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.message}>{message}</Text>
+        <TouchableOpacity style={styles.button} onPress={onClose}>
+          <Text style={styles.buttonText}>{buttonText}</Text>
+        </TouchableOpacity>
       </View>
-    </Modal>
-  );
-};
+    </View>
+  </Modal>
+);
 
 const styles = StyleSheet.create({
-  container: {
+  centeredView: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(42, 129, 243, 0.5)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
-  content: {
-    width: '80%',
-    padding: 20,
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
     borderRadius: 10,
+    padding: 25,
     alignItems: 'center',
-    backgroundColor: '#007AFF',
+    elevation: 5,
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
-    color: '#FFF',
     marginBottom: 10,
   },
-  subtitle: {
+  message: {
     fontSize: 16,
-    color: '#FFF',
+    marginBottom: 20,
     textAlign: 'center',
-    marginBottom: 20,
-  },
-  checkmarkContainer: {
-    marginBottom: 20,
-  },
-  checkmark: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkmarkText: {
-    fontSize: 30,
-    color: '#FFF',
   },
   button: {
-    backgroundColor: '#FFF',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 5,
+    backgroundColor: '#007AFF',
+    padding: 12,
+    borderRadius: 8,
+    minWidth: 120,
   },
   buttonText: {
-    fontSize: 16,
+    color: 'white',
+    textAlign: 'center',
     fontWeight: 'bold',
   },
 });

@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import Card from '../components/Card';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
@@ -23,7 +23,7 @@ const WelcomeScreen = () => {
     );
 
     return (
-        <ScrollView style={styles.container}>
+        <SafeAreaView style={styles.container}>
             {/* Welcome Section */}
             <View style={styles.welcomeSection}>
                 <Text style={styles.welcomeText}>
@@ -33,7 +33,7 @@ const WelcomeScreen = () => {
                     Let's get started with your child's admission process
                 </Text>
             </View>
-
+            <ScrollView style={styles.form}>
             {/* Get Started Guide */}
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Quick Actions</Text>
@@ -56,21 +56,21 @@ const WelcomeScreen = () => {
                     iconName="calendar-outline"
                     title="View Admission Calendar"
                     description="Check important dates and deadlines"
-                    onPress={() => navigation.navigate('AdmissionCalendar')}
+                    onPress={() => navigation.navigate('Calendar')}
                 />
 
                 <QuickActionCard
                     iconName="document-text-outline"
                     title="Document Checklist"
                     description="View required documents for admission"
-                    onPress={() => navigation.navigate('DocumentChecklist')}
+                    onPress={() => navigation.navigate('Events')}
                 />
 
                 <QuickActionCard
                     iconName="notifications-outline"
                     title="Set Up Notifications"
                     description="Stay updated on application status"
-                    onPress={() => navigation.navigate('NotificationScreen')}
+                    onPress={() => navigation.navigate('Notifications')}
                 />
             </View>
 
@@ -97,12 +97,17 @@ const WelcomeScreen = () => {
                 </TouchableOpacity>
             </View>
         </ScrollView>
+        </SafeAreaView>
     );
 };
 
 
 const styles = StyleSheet.create({
     container: {
+        flex: 1,
+        backgroundColor: '#007AFF',
+    },
+    form: {
         flex: 1,
         backgroundColor: '#f5f5f5',
     },

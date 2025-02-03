@@ -7,7 +7,7 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [userInfo, setUserInfo] = useState(null);
   const [initialLoading, setInitialLoading] = useState(true);
-  const [authLoading, setAuthLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const saveUserInfo = async (userInfo) => {
     try {
@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (userInfo) => {
-    setAuthLoading(true);
+    setIsLoading(true);
     try {
       const loggedInUser = await AuthService.login(userInfo);
       if (!loggedInUser) {
@@ -52,12 +52,12 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       throw error;
     } finally {
-      setAuthLoading(false);
+      setIsLoading(false);
     }
   };
 
   const register = async (userInfo) => {
-    setAuthLoading(true);
+    setIsLoading(true);
     try {
       const newUser = await AuthService.signup(userInfo);
       if (!newUser) {
@@ -69,12 +69,12 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       throw error;
     } finally {
-      setAuthLoading(false);
+      setIsLoading(false);
     }
   };
 
   const logout = async () => {
-    setAuthLoading(true);
+    setIsLoading(true);
     try {
       await AuthService.logout();
       setUserInfo(null);
@@ -82,7 +82,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       throw error;
     } finally {
-      setAuthLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -91,7 +91,7 @@ export const AuthProvider = ({ children }) => {
       value={{
         userInfo,
         initialLoading,
-        authLoading,
+        isLoading,
         login,
         register,
         logout,
