@@ -23,7 +23,7 @@ const WelcomeScreen = () => {
     );
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             {/* Welcome Section */}
             <View style={styles.welcomeSection}>
                 <Text style={styles.welcomeText}>
@@ -40,9 +40,9 @@ const WelcomeScreen = () => {
                 
                 <QuickActionCard
                     iconName="person-outline"
-                    title="Complete Your Profile"
-                    description="Add your contact details and preferences"
-                    onPress={() => navigation.navigate('Profile')}
+                    title=""
+                    description=" as a Student"
+                    onPress={() => navigation.navigate('')}
                 />
 
                 <QuickActionCard
@@ -52,26 +52,6 @@ const WelcomeScreen = () => {
                     onPress={() => navigation.navigate('Admission')}
                 />
 
-                <QuickActionCard
-                    iconName="calendar-outline"
-                    title="View Admission Calendar"
-                    description="Check important dates and deadlines"
-                    onPress={() => navigation.navigate('Calendar')}
-                />
-
-                <QuickActionCard
-                    iconName="document-text-outline"
-                    title="Document Checklist"
-                    description="View required documents for admission"
-                    onPress={() => navigation.navigate('Events')}
-                />
-
-                <QuickActionCard
-                    iconName="notifications-outline"
-                    title="Set Up Notifications"
-                    description="Stay updated on application status"
-                    onPress={() => navigation.navigate('Notifications')}
-                />
             </View>
 
             {/* Important Information */}
@@ -80,7 +60,6 @@ const WelcomeScreen = () => {
                 <Card style={styles.infoCard}>
                     <Text style={styles.infoTitle}>Admission Timeline</Text>
                     <Text style={styles.infoText}>• Applications Open: [Date]</Text>
-                    <Text style={styles.infoText}>• Document Submission: [Date]</Text>
                     <Text style={styles.infoText}>• Assessment Date: [Date]</Text>
                     <Text style={styles.infoText}>• Results Declaration: [Date]</Text>
                 </Card>
@@ -97,7 +76,7 @@ const WelcomeScreen = () => {
                 </TouchableOpacity>
             </View>
         </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 };
 

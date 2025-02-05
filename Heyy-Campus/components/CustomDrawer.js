@@ -24,7 +24,7 @@ const CustomDrawer = (props) => {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <DrawerContentScrollView {...props}>
         <View style={styles.drawerHeader}>
           <Image
@@ -79,38 +79,42 @@ const CustomDrawer = (props) => {
           <Text style={styles.footerItemText}>Logout</Text>
         </TouchableOpacity>
       </View>
-    </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: 'space-between',
     backgroundColor: '#f5f5f5',
+    padding: 10,
   },
   drawerHeader: {
     flexDirection: 'row',
+    gap: 10,
     alignItems: 'center',
-    padding: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5E5',
+    paddingBottom: 10,
   },
   logo: {
     width: 40,
     height: 40,
-    marginRight: 10,
+    borderRadius: '50%',
   },
   appName: {
     fontSize: 14,
     fontWeight: 'bold',
     color: '#007AFF',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   profileSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
+    paddingVertical: 10,
   },
   avatar: {
     width: 50,
@@ -132,12 +136,12 @@ const styles = StyleSheet.create({
   drawerFooter: {
     borderTopWidth: 1,
     borderTopColor: '#E5E5E5',
-    padding: 20,
+    padding: 10,
+    gap: 10,
   },
   footerItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
   },
   footerItemText: {
     marginLeft: 10,

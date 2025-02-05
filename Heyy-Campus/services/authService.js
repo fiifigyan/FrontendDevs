@@ -79,7 +79,7 @@ const AuthService = {
 
   logout: async () => {
     try {
-      const response = await api.post('/logout');
+      const response = await api.post('/parent/api/logout');
       console.log('Logout Response:', {
         status: response.status,
         data: response.data

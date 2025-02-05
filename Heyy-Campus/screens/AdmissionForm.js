@@ -293,7 +293,7 @@ const AdmissionForm = () => {
           )}
         </TouchableOpacity>
       </ScrollView>
-
+      
       <SuccessModal
         visible={showSuccessModal}
         onClose={() => {
@@ -384,8 +384,13 @@ const styles = StyleSheet.create({
   uploadText: {
     color: '#fff',
   },
-  uploadSuccess: {
-    color: 'red',
+  uploadButtonSuccess: {
+    backgroundColor: '#2ecc71',
+    borderColor: '#2ecc71',
+  },
+
+  uploadTextSuccess: {
+    color: '#fff',
     fontSize: 12,
     marginTop: 5,
   },

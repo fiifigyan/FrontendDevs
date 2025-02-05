@@ -28,10 +28,10 @@ function App() {
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: '#0074FF'}}>
       <AuthProvider>
-      <AdmissionProvider>
-        <AppContent />
-      </AdmissionProvider>
-    </AuthProvider>
+        <AdmissionProvider>
+          <AppContent />
+        </AdmissionProvider>
+      </AuthProvider>
     </SafeAreaView>
   );
 }

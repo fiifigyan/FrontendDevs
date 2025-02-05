@@ -120,8 +120,8 @@ const SignupScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Create Your Account</Text>
-        <Text style={styles.subtitle}>Sign up as Parent</Text>
+        <Text style={styles.title}>New Account</Text>
+        <Text style={styles.subtitle}>Sign up and get started</Text>
       </View>
       
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -193,7 +193,7 @@ const SignupScreen = () => {
             {isLoading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.submitText}>Create Account</Text>
+              <Text style={styles.submitButtonText}>Create Account</Text>
             )}
             {/* <View style={styles.buttonContent}>
               {isLoading && (
@@ -280,6 +280,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 18,
     fontWeight: 'bold',
+    textAlign:'center'
   },
   buttonContent: {
     flexDirection: 'row',

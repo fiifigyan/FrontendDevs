@@ -3,7 +3,6 @@ import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { NavigationContainer } from '@react-navigation/native';
 
 // Screens
 import AdmissionForm from '../screens/AdmissionForm';
@@ -25,7 +24,6 @@ import TabNavigator from './TabNavigator';
 // Components
 import CustomDrawer from '../components/CustomDrawer';
 import CustomHeader from '../components/CustomHeader';
-// import HomeScreen from '../screens/HomeScreen';
 
 const Drawer = createDrawerNavigator();
 const Stack = createNativeStackNavigator();
@@ -61,11 +59,20 @@ const DrawerNavigator = () => {
         }}
       />
       <Drawer.Screen
-        name="Help"
+        name="Add Account"
+        component={AddAccountScreen}
+        options={{
+          drawerIcon: ({ focused }) => (
+            <Icon name="person-add-outline" size={20} color={focused ? '#007AFF' : '#000'} />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="Switch Account"
         component={HelpCenterScreen}
         options={{
           drawerIcon: ({ focused }) => (
-            <Icon name="help-circle-outline" size={20} color={focused ? '#007AFF' : '#000'} />
+            <Icon name="swap-horizontal-outline" size={20} color={focused ? '#007AFF' : '#000'} />
           ),
         }}
       />
@@ -78,15 +85,6 @@ const DrawerNavigator = () => {
           ),
         }}
       />
-      <Drawer.Screen
-        name="Switch Account"
-        component={HelpCenterScreen}
-        options={{
-          drawerIcon: ({ focused }) => (
-            <Icon name="help-circle-outline" size={20} color={focused ? '#007AFF' : '#000'} />
-          ),
-        }}
-      />
     </Drawer.Navigator>
   );
 };
@@ -94,7 +92,7 @@ const DrawerNavigator = () => {
 const StackNavigator = () => {
   return (
     <Stack.Navigator
-      initialRouteName="Welcome"
+      initialRouteName="Drawer"
       screenOptions={{
         headerShown: false,
       }}

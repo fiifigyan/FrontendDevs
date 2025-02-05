@@ -12,7 +12,7 @@ const logger = {
 const admissionApiClient = axios.create({
   baseURL: config.ADMISSION_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
-  timeout: 20000,
+  // timeout: 2000,
 });
 
 const REQUIRED_FIELDS = {

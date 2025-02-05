@@ -17,27 +17,22 @@ const AuthStack = () => {
     <Stack.Screen
       name='Onboard'
       component={OnboardingScreen}
-      options={{ headerShown: false }}
     />
     <Stack.Screen
       name='Signup'
       component={SignupScreen}
-      options={{ headerShown: false }}
     />
     <Stack.Screen
       name='Login'
       component={LoginScreen}
-      options={{ headerShown: false }}
     />
     <Stack.Screen
       name='Forgot'
       component={ForgotPasswordScreen}
-      options={{ headerShown: false }}
     />
     <Stack.Screen
       name='Reset'
       component={ResetPasswordScreen}
-      options={{ headerShown: false }}
     />
     </Stack.Navigator>
   )

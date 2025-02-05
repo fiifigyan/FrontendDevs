@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Alert, StyleSheet, ActivityIndicator, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator, SafeAreaView } from 'react-native';
 import { CustomInput } from '../components/CustomInput';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
@@ -8,12 +8,13 @@ const LoginScreen = () => {
   const navigation = useNavigation();
   const [userInfo, setUserInfo] = useState({
     email: '',
+    // student_ID: '',
     password: ''
   });
   
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
-  const { login, authLoading } = useContext(AuthContext);
+  const { login, isLoading } = useContext(AuthContext);
 
   const validateForm = () => {
     const newErrors = {};
@@ -23,6 +24,12 @@ const LoginScreen = () => {
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userInfo.email)) {
       newErrors.email = 'Valid email is required';
     }
+
+    // if (!userInfo.student_ID.trim()){
+    //   newErrors.student_ID = 'Student ID is required';
+    // } else if ((userInfo.student_ID)) {
+    //   newErrors.student_ID = 'Valid student ID is required';
+    // }
     
     if (!userInfo.password.trim()) {
       newErrors.password = 'Password is required';
@@ -40,9 +47,10 @@ const LoginScreen = () => {
     try {
       await login({
         email: userInfo.email.trim().toLowerCase(),
+        // student_ID: userInfo.student_ID.trim(),
         password: userInfo.password
       });
-      setUserInfo({ email: '', password: '' });
+      setUserInfo({ email: '', student_ID: '', password: '' });
       //debuger
       console.log('User logged in successfully: ', userInfo);
     } catch (error) {
@@ -57,8 +65,8 @@ const LoginScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Welcome Back!</Text>
-        <Text style={styles.subtitle}>Login as Parent</Text>
+        <Text style={styles.title}>Welcome!</Text>
+        <Text style={styles.subtitle}>Login and get started</Text>
       </View>
       
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -72,6 +80,14 @@ const LoginScreen = () => {
             keyboardType="email-address"
             autoCapitalize="none"
           />
+
+          {/* <CustomInput
+            label="Student ID *"
+            value={userInfo.student_ID}
+            onChangeText={(text) => setUserInfo(prev => ({ ...prev, student_ID: text }))}
+            error={errors.student_ID}
+            placeholder="Enter your student ID"
+          /> */}
           
           <CustomInput
             label="Password *"
@@ -90,17 +106,16 @@ const LoginScreen = () => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.submitButton, authLoading && styles.submitButtonDisabled]}
+            style={[styles.submitButton, isLoading && styles.submitButtonDisabled]}
             onPress={handleLogin}
-            disabled={authLoading}
+            disabled={isLoading}
           >
             <View style={styles.buttonContent}>
-              {authLoading && (
-                <ActivityIndicator size="small" color="#FFFFFF" style={styles.spinner} />
+              {isLoading ? (
+                <ActivityIndicator color="#fff" />
+                ) : (
+                <Text style={styles.submitButtonText}>Login</Text>
               )}
-              <Text style={styles.submitButtonText}>
-                {authLoading ? 'Logging in...' : 'Login'}
-              </Text>
             </View>
           </TouchableOpacity>
 
